@@ -1,0 +1,38 @@
+{
+  "name": "air-dev",
+  "version": "0.1.1",
+  "main": "lib/index.js",
+  "scripts": {
+    "es": "esbuild example/* --outdir=dist",
+    "dev": "node ./lib/index.js example dev",
+    "build": "node ./lib/index.js example build"
+  },
+  "exports": {
+    "require": "./lib/index.js",
+    "import": "./lib/index.ts"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.8",
+    "@types/node": "^14.14.6",
+    "express": "^4.17.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ymzuiku/air-dev.git"
+  },
+  "bin": {
+    "air-dev": "lib/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ymzuiku/air-dev/issues"
+  },
+  "homepage": "https://github.com/ymzuiku/air-dev#readme",
+  "dependencies": {
+    "@types/fs-extra": "^9.0.9",
+    "esbuild": "^0.10.0",
+    "fs-extra": "^9.1.0"
+  }
+}

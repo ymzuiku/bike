@@ -1,0 +1,39 @@
+{
+  "typedocOptions": {
+    "mode": "modules",
+    "out": "docs"
+  },
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "noEmitHelpers": false,
+    "importHelpers": true,
+    "noResolve": false,
+    "noEmit": true,
+    "inlineSourceMap": false,
+    "declaration": false,
+    "outDir": "./umd",
+    "jsx": "preserve",
+    "types": ["jest"]
+  },
+  "exclude": [".vscode", ".git", "node_modules", "umd", "dist"],
+  "include": [
+    "jest",
+    "lib",
+    "scripts2",
+    "server",
+    "cypress/integration",
+    "cypress/utils",
+    "static/code.js"
+  ]
+}
