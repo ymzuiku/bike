@@ -1,11 +1,11 @@
-# air-dev
+# airt
 
 Use cluster auto fork code at file save;
 
 ## Install
 
 ```sh
-yarn add air-dev -D
+yarn add airt -D
 ```
 
 add package.json
@@ -13,8 +13,8 @@ add package.json
 ```json
 {
   "scripts": {
-    "dev": "air-dev src",
-    "build": "air-dev src --build"
+    "dev": "airt src",
+    "build": "airt src --build"
   }
 }
 ```
@@ -35,4 +35,4 @@ $ yarn build
 
 ## Public dir
 
-air-dev copy `public/` to `dir`;
+airt copy `public/` to `dir`;

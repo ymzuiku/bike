@@ -1,6 +1,6 @@
 {
-  "name": "air-dev",
-  "version": "0.1.1",
+  "name": "airt",
+  "version": "0.1.0",
   "main": "lib/index.js",
   "scripts": {
     "es": "esbuild example/* --outdir=dist",
@@ -18,18 +18,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ymzuiku/air-dev.git"
+    "url": "git+https://github.com/ymzuiku/airt.git"
   },
   "bin": {
-    "air-dev": "lib/index.js"
+    "airt": "lib/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ymzuiku/air-dev/issues"
+    "url": "https://github.com/ymzuiku/airt/issues"
   },
-  "homepage": "https://github.com/ymzuiku/air-dev#readme",
+  "homepage": "https://github.com/ymzuiku/airt#readme",
   "dependencies": {
     "@types/fs-extra": "^9.0.9",
     "esbuild": "^0.10.0",
