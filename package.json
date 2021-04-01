@@ -1,9 +1,8 @@
 {
   "name": "airt",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "lib/index.js",
   "scripts": {
-    "es": "esbuild example/* --outdir=dist",
     "dev": "node ./lib/index.js example dev",
     "build": "node ./lib/index.js example build"
   },
