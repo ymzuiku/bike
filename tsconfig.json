@@ -27,13 +27,5 @@
     "types": ["jest"]
   },
   "exclude": [".vscode", ".git", "node_modules", "umd", "dist"],
-  "include": [
-    "jest",
-    "lib",
-    "scripts2",
-    "server",
-    "cypress/integration",
-    "cypress/utils",
-    "static/code.js"
-  ]
+  "include": ["jest", "lib", "server"]
 }

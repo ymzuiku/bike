@@ -1,5 +1,7 @@
 # airt
 
+> Fast start typescript node.js project
+
 Use cluster auto fork code at file save;
 
 ## Install
