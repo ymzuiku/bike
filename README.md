@@ -42,5 +42,5 @@ airt copy `static/` to `dir`;
 ## Set out dir and static dir
 
 ```sh
-out="build" static="public" yarn dev
+out=build static=public yarn dev
 ```
