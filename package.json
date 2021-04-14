@@ -1,6 +1,6 @@
 {
   "name": "airt",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "main": "lib/index.js",
   "scripts": {
     "dev": "node ./lib/index.js example dev",

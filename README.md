@@ -26,15 +26,21 @@ add package.json
 Run Dev Server:
 
 ```sh
-$ yarn dev
+yarn dev
 ```
 
 Build release
 
 ```sh
-$ yarn build
+yarn build
 ```
 
-## Public dir
+## static dir
 
-airt copy `public/` to `dir`;
+airt copy `static/` to `dir`;
+
+## Set out dir and static dir
+
+```sh
+out="build" static="public" yarn dev
+```
