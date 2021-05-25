@@ -1,6 +1,6 @@
 {
   "name": "airt",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "main": "lib/index.js",
   "scripts": {
     "dev": "node ./lib/index.js example dev",
@@ -8,7 +8,7 @@
   },
   "exports": {
     "require": "./lib/index.js",
-    "import": "./lib/index.ts"
+    "import": "./lib/index.js"
   },
   "devDependencies": {
     "@types/express": "^4.17.8",

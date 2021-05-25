@@ -15,8 +15,8 @@ add package.json
 ```json
 {
   "scripts": {
-    "dev": "airt src",
-    "build": "airt src --build"
+    "dev": "airt src -w",
+    "build": "airt src"
   }
 }
 ```
@@ -61,3 +61,24 @@ package.json:
 ```
 
 此时 airt 会编译 clino 库到 dist 中
+
+## copyFiles
+
+airt 默认会拷贝以下文件到 dist 中
+
+```
+.env
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+```
+
+若需要增加其他文件，可以配置 package.json 的 copyFiles 属性：
+
+package.json:
+
+```json
+{
+  "copyFiles": [".env.local", ".env.test"]
+}
+```
