@@ -7,7 +7,7 @@ Use cluster auto fork code at file save;
 ## Install
 
 ```sh
-yarn add airt typescript tslib -D
+yarn add airt -D
 ```
 
 add package.json
