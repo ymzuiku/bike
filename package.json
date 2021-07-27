@@ -1,6 +1,6 @@
 {
   "name": "airt",
-  "version": "0.2.6",
+  "version": "0.2.8",
   "main": "lib/index.js",
   "scripts": {
     "dev": "node ./lib/index.js example dev",
@@ -18,7 +18,7 @@
     "url": "git+https://github.com/ymzuiku/airt.git"
   },
   "bin": {
-    "airt": "lib/index.js"
+    "airt": "lib/bin.js"
   },
   "keywords": [],
   "author": "",
