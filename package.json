@@ -1,6 +1,6 @@
 {
-  "name": "airt",
-  "version": "0.2.8",
+  "name": "bike",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "scripts": {
     "dev": "node ./lib/index.js example dev",
@@ -15,18 +15,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ymzuiku/airt.git"
+    "url": "git+https://github.com/ymzuiku/bike.git"
   },
   "bin": {
-    "airt": "lib/bin.js"
+    "bike": "lib/bin.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ymzuiku/airt/issues"
+    "url": "https://github.com/ymzuiku/bike/issues"
   },
-  "homepage": "https://github.com/ymzuiku/airt#readme",
+  "homepage": "https://github.com/ymzuiku/bike#readme",
   "dependencies": {
     "@types/node": "^14.14.6",
     "esbuild": "^0.12.15",
