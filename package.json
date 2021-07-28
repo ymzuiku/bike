@@ -11,14 +11,15 @@
     "import": "./lib/index.js"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.9"
+    "@types/fs-extra": "^9.0.9",
+    "@types/yargs": "^17.0.2"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ymzuiku/bike.git"
   },
   "bin": {
-    "bike": "lib/bin.js"
+    "bike": "bike.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,7 @@
     "fs-extra": "^10.0.0",
     "source-map-support": "^0.5.19",
     "tslib": "^2.3.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "yargs": "^17.0.1"
   }
 }

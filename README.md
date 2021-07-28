@@ -15,8 +15,8 @@ add package.json
 ```json
 {
   "scripts": {
-    "dev": "bike src -w",
-    "build": "bike src"
+    "dev": "bike -w",
+    "build": "bike"
   }
 }
 ```
@@ -35,14 +35,47 @@ Build release
 yarn build
 ```
 
-## static dir
+## CLI Options / Configuration
 
-bike copy `static/` to `dir`;
-
-## Set out dir and static dir
-
-```sh
-out=build static=public yarn dev
+```
+Options:
+      --help                Show help                 [boolean]
+      --version             Show version number       [boolean]
+  -o, --out                 Build dist path
+                                     [string] [default: "dist"]
+  -p, --public              Auto copy public's files to out
+                                   [string] [default: "public"]
+  -s, --src                 Source dir[string] [default: "src"]
+  -e, --entry               Main typescript file
+                             [string] [default: "src/index.ts"]
+  -m, --sourcemap           Esbuild use sourcemap
+                                      [boolean] [default: true]
+  -t, --test                Is use test
+                                     [boolean] [default: false]
+      --start               Start server after on build
+                                     [boolean] [default: false]
+      --platform            Esbuild platform
+                                     [string] [default: "node"]
+  -w, --watch               Watch dir on change reload
+                                     [boolean] [default: false]
+      --clear               On reload auto clear
+                                      [boolean] [default: true]
+  -r, --reporter            (bike-tdd) c8 reporter, pick in
+                            :[text, html]              [string]
+      --match               (bike-tdd) test files RegExp string
+                [string] [default: "(.test|.spec|_test|_spec)"]
+      --rematch             (bike-tdd) auto rematch all test
+                            files on watch
+                                     [boolean] [default: false]
+      --c8-include, --c8-i  (bike-tdd) c8 include all files
+                                     [boolean] [default: false]
+      --c8-config           (bike-tdd) c8 path to JSON
+                            configuration file
+                                         [string] [default: ""]
+      --c8-exclude          (bike-tdd) c8 exclude all files
+                                     [boolean] [default: false]
+      --skip-full           (bike-tdd) c8 skip full in text
+                            that ignore in html       [boolean]
 ```
 
 ## keepDependencies
@@ -53,9 +86,11 @@ package.json:
 
 ```json
 {
-  "keepDependencies": {
-    "clino": 1,
-    "clino-client": 1
+  "bike": {
+    "keepDependencies": {
+      "clino": 1,
+      "clino-client": 1
+    }
   }
 }
 ```
@@ -79,6 +114,8 @@ package.json:
 
 ```json
 {
-  "copyFiles": [".env.local", ".env.test"]
+  "bike": {
+    "copyFiles": [".env.local", ".env.test"]
+  }
 }
 ```
