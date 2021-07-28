@@ -37,6 +37,8 @@ yarn build
 
 ## CLI Options / Configuration
 
+Use `bike --help`:
+
 ```
 Options:
       --help                Show help                 [boolean]
