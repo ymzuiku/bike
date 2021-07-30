@@ -1,7 +1,7 @@
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 
-function loadArgs(argv) {
+function getConfig(argv) {
   const conf = yargs(hideBin(argv))
     .option("src", {
       alias: "s",
@@ -22,16 +22,63 @@ function loadArgs(argv) {
       description: "Auto copy public's files to out",
     })
     .option("entry", {
-      alias: "e",
       type: "string",
-      default: "src/index.ts",
-      description: "Main typescript file",
+      description: "Main typescript file, default: ${src}/index.ts",
     })
-    .option("sourcemap", {
+    .option("keep", {
+      type: "boolean",
+      default: false,
+      description: "Don't compiler dependencies",
+    })
+    .option("base", {
+      alias: "b",
+      type: "string",
+      default: "nodejs",
+      description: "Pick in nodejs, browser, aoife",
+    })
+    .option("minify", {
       alias: "m",
       type: "boolean",
-      default: true,
+      description: "Esbuild minify",
+    })
+    .option("copy", {
+      type: "array",
+      description: "copy file to dist",
+    })
+    .option("external", {
+      alias: "e",
+      type: "array",
+      description: "Esbuild external",
+    })
+    .option("define", {
+      type: "string",
+      description: "Esbuild define",
+    })
+    .option("target", {
+      type: "string",
+      default: "es6",
+      description: "Esbuild target",
+    })
+    .option("splitting", {
+      type: "boolean",
+      default: false,
+      description: "Esbuild splitting",
+    })
+    .option("format", {
+      type: "string",
+      description: "Esbuild format",
+    })
+    .option("sourcemap", {
+      type: "boolean",
       description: "Esbuild use sourcemap",
+    })
+    .option("jsx-factory", {
+      type: "string",
+      description: "Esbuild jsx-factory",
+    })
+    .option("jsx-fragment", {
+      type: "string",
+      description: "Esbuild jsx-fragment",
     })
     .option("test", {
       alias: "t",
@@ -76,7 +123,6 @@ function loadArgs(argv) {
       description: "(bike-tdd) auto rematch all test files on watch",
     })
     .option("c8-include", {
-      alias: "c8-i",
       type: "boolean",
       default: false,
       description: "(bike-tdd) c8 include all files",
@@ -100,7 +146,44 @@ function loadArgs(argv) {
     conf["skip-full"] = true;
   }
 
+  if (!conf.entry) {
+    conf.entry = conf.src + "/index.ts";
+  }
+
+  if (conf.sourcemap === undefined) {
+    if (conf.watch || conf.start) {
+      conf.sourcemap = true;
+    }
+  }
+
+  const brower = () => {
+    console.log("bbbbbbbbbb");
+    if (!conf.watch && !conf.start) {
+      if (conf["minify"] === undefined) {
+        conf["minify"] = true;
+      }
+    }
+    if (conf["format"] === undefined) {
+      conf["format"] = "esm";
+    }
+    if (conf["splitting"] === undefined) {
+      conf["splitting"] = true;
+    }
+  };
+
+  if (conf.base === "browser") {
+    brower();
+  } else if (conf.base === "aoife") {
+    brower();
+    if (!conf["jsx-factory"]) {
+      conf["jsx-factory"] = "aoife";
+    }
+    if (!conf["jsx-fragment"]) {
+      conf["jsx-fragment"] = "aoife.Frag";
+    }
+  }
+
   return conf;
 }
 
-module.exports = loadArgs;
+module.exports = getConfig;

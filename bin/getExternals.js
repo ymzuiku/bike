@@ -20,16 +20,16 @@ function getKeys(obj) {
 
 function getExternals(conf) {
   let externals = [
+    // dev
+    "esbuild",
     // nodejs
     "wasi",
     "worker_threads",
     "v8",
     "vm",
     "repl",
-    "esbuild",
     "fs",
     "fs/promises",
-    "fs-extra",
     "path",
     "cluster",
     "http",
@@ -49,22 +49,13 @@ function getExternals(conf) {
   externals = [...externals, ...Object.keys(selfPkg.devDependencies)];
 
   const pkg = getPkg();
+
   if (pkg) {
-    if (conf.watch && pkg.dependencies) {
+    if (conf.watch && !conf.keep && pkg.dependencies) {
       externals = [...externals, ...getKeys(pkg.dependencies)];
     }
     if (pkg.devDependencies) {
       externals = [...externals, ...getKeys(pkg.devDependencies)];
-    }
-    if (pkg.keepDependencies) {
-      const keep = new Set(Object.keys(pkg.keepDependencies));
-      let nextExtr = [];
-      externals.forEach((v) => {
-        if (!keep.has(v)) {
-          nextExtr.push(v);
-        }
-      });
-      externals = nextExtr;
     }
   }
   if (fs.existsSync(tsconfigPath)) {

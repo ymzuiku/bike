@@ -3,12 +3,12 @@ const esbuild = require("esbuild");
 const { resolve } = require("path");
 const { getExternals } = require("./getExternals");
 const { getCopyFiles } = require("./getCopyFiles");
-const loadArgs = require("./loadArgs");
+const loadArgs = require("./getConfig");
 
 const fs = require("fs-extra");
 const cwd = process.cwd();
 const cluster = require("cluster");
-const { getPkg } = require("./getPkg");
+// const { getPkg } = require("./getPkg");
 
 async function bike(config) {
   if (cluster.isWorker) {
@@ -41,25 +41,33 @@ async function bike(config) {
     }
   });
 
-  const pkg = getPkg();
-  if (pkg) {
-    const _pkg = JSON.parse(JSON.stringify(pkg));
-    delete _pkg.devDependencies;
-    if (!config.watch) {
-      delete _pkg.dependencies;
-    }
-    fs.writeFileSync(
-      resolve(cwd, config.out, "package.json"),
-      JSON.stringify(_pkg, null, 2)
-    );
-  }
+  // const pkg = getPkg();
+  // if (pkg) {
+  //   const _pkg = JSON.parse(JSON.stringify(pkg));
+  //   delete _pkg.devDependencies;
+  //   if (!config.watch) {
+  //     delete _pkg.dependencies;
+  //   }
+  //   fs.writeFileSync(
+  //     resolve(cwd, config.out, "package.json"),
+  //     JSON.stringify(_pkg, null, 2)
+  //   );
+  // }
 
-  const ops = {
+  const esbuildOptions = {
     entryPoints: [resolve(cwd, config.entry)],
     bundle: true,
-    target: ["node16", "es6"],
+    target: config.target || ["node16", "es6"],
+    minify: config.minify,
+    define: config.define,
     platform: config.platform,
-    external: getExternals(config),
+    splitting: config.splitting,
+    format: config.format,
+    jsxFactory: config["jsx-factory"],
+    jsxFragment: config["jsx-fragment"],
+    external: config.external
+      ? [...getExternals(config), ...config.external]
+      : getExternals(config),
     outfile: config.out + "/index.js",
     sourcemap: config.sourcemap,
   };
@@ -76,7 +84,7 @@ async function bike(config) {
     if (config.before) {
       await Promise.resolve(config.before(config));
     }
-    await esbuild.build(ops);
+    await esbuild.build({ ...esbuildOptions });
     if (config.after) {
       config.after(config);
     }
