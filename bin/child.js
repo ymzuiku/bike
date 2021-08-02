@@ -1,6 +1,16 @@
 const { spawn } = require("child_process");
 
 let lastChild = null;
+let coverMatch = new RegExp("----|----");
+
+function log(data) {
+  const base = data.toString("utf8");
+  const v = data.toString("utf8").trim();
+  if (!v) {
+    return;
+  }
+  console.log(base);
+}
 
 function child(conf) {
   if (lastChild) {
@@ -19,30 +29,72 @@ function child(conf) {
       ["./coverage", "./node_modules", conf.c8Exclude]
         .filter(Boolean)
         .join(","),
-      conf["skip-full"] == true && "--skip-full",
-      "--clean",
+      conf["c8-skip-full"] == true && "--skip-full",
     ];
   }
   const ls = spawn(
     "npx",
-    [...c8, "node", conf.out + "/" + conf.outfile, ...conf.argv].filter(
-      Boolean
-    ),
+    [
+      ...c8,
+      "node",
+      conf.out + "/" + conf.outfile,
+      ...conf.argv,
+      "--color",
+    ].filter(Boolean),
     {
       stdio: "inherit",
     }
   );
-  if (ls.stdout && ls.stderr) {
-    ls.stdout.on("data", console.log);
-    ls.stderr.on("data", console.error);
-    ls.on("close", (code) => {
-      if (conf.reporter === "html") {
-        console.log(`Open Browser reporter html:`);
-        console.log(`${path.resolve(process.cwd(), "coverage")}/index.html`);
-      }
-    });
-  }
   lastChild = ls;
+
+  // if (conf.reporter === "text" && conf.reporterMini) {
+  //   let isInCover = false;
+  //   ls.stdout.on("data", (data) => {
+  //     if (!isInCover && coverMatch.test(data)) {
+  //       isInCover = true;
+  //     }
+  //     if (isInCover) {
+  //       const table = data.toString().split("\n");
+  //       if (/|/.test(table)) {
+  //         const subTable = table.toString().split("\n");
+  //         subTable.forEach((line) => {
+  //           const list = line.toString().split("|");
+  //           process.stdout.write(
+  //             [list[0], list[list.length - 2], list[list.length - 1]].join(
+  //               "|"
+  //             ) + "\n"
+  //           );
+  //         });
+  //       } else {
+  //         // console.log(table);
+  //         table.forEach((line) => {
+  //           const list = line.toString().split("|");
+  //           process.stdout.write(
+  //             [list[0], list[list.length - 2], list[list.length - 1]].join(
+  //               "|"
+  //             ) + "\n"
+  //           );
+  //         });
+  //       }
+
+  //       // const list = data.toString().split("|");
+  //       // console.log(list);
+  //       // process.stdout.write(
+  //       //   [list[0], list[list.length - 2], list[list.length - 1]].join("|")
+  //       // );
+  //     } else {
+  //       process.stdout.write(data);
+  //     }
+  //   });
+  // } else {
+  //   ls.stdout.on("data", (data) => {
+  //     process.stdout.write(data);
+  //   });
+  // }
+
+  ls.stderr.on("data", (data) => {
+    process.stdout.write(data);
+  });
   return ls;
 }
 

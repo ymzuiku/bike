@@ -2,8 +2,11 @@ import { createSo, So } from "./so";
 import { cache } from "./cache";
 import { gray, green, logPass, red } from "./log";
 import { local } from "./local";
+import { resolve } from "path";
 
-const testAll = () => (global as any).bikeTestAll;
+require("source-map-support").install();
+const bikeTestAll = () => (global as any).bikeTestAll;
+const bikeReporter = () => (global as any).bikeReporter;
 
 async function runOne(key: string) {
   if (cache.each) {
@@ -27,7 +30,7 @@ async function runOne(key: string) {
     const doing = Object.keys(cache.matchIt);
     const errors = Object.keys(cache.errors);
     // 若是测试所有，不进行 test.config 调整
-    if (!testAll()) {
+    if (!bikeTestAll()) {
       local.save(doing, errors);
     }
     if (errors.length === 0) {
@@ -42,12 +45,17 @@ async function runOne(key: string) {
       );
     }
     console.log(gray(`Auto retest on change...`));
+    if (bikeReporter() === "html") {
+      console.log(
+        `Coverage html at: ${resolve(process.cwd(), "coverage")}/index.html`
+      );
+    }
   }
 }
 
 async function runTest() {
   // 读取需要测试的对象
-  const task = testAll()
+  const task = bikeTestAll()
     ? Object.keys(cache.it)
     : local.load(Object.keys(cache.it));
 

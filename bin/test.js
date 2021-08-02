@@ -66,9 +66,5 @@ global.bikeReporter = "${conf.reporter || "none"}";
     }
   }
 
-  if (conf.reporter && !conf.watch) {
-    c8({ ...conf, before });
-  } else {
-    bike({ ...conf, before });
-  }
+  bike({ ...conf, before });
 };

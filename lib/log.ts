@@ -17,7 +17,7 @@ export function logFail(name: string, stack: string) {
     }
     if (cwdReg.test(line)) {
       console.log(green(`${line.split(cwd)[1]}`));
-      console.log(" ");
+      console.log("\t");
     }
   });
 }

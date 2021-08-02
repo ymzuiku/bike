@@ -83,6 +83,7 @@ function getConfig(argv) {
     })
     .option("sourcemap", {
       type: "boolean",
+      default: true,
       description: "Esbuild use sourcemap",
     })
     .option("jsx-factory", {
@@ -128,36 +129,43 @@ function getConfig(argv) {
     .option("reporter", {
       alias: "r",
       type: "string",
-      description: "(bike-tdd) c8 reporter, pick in :[text, html]",
+      description: "(only-test) c8 reporter, pick in :[text, html]",
     })
+    // .option("reporter-mini", {
+    //   type: "boolean",
+    //   default: true,
+    //   description: "(only-test) c8 reporter mini line",
+    // })
     .option("match", {
       type: "string",
       default: "(.test|.spec|_test|_spec)",
-      description: "(bike-tdd) test files RegExp string",
+      description: "(only-test) test files RegExp string",
     })
     .option("rematch", {
       type: "boolean",
       default: false,
-      description: "(bike-tdd) auto rematch all test files on watch",
+      description: "(only-test) auto rematch all test files on watch",
     })
     .option("c8-include", {
+      alias: "n",
       type: "boolean",
       default: false,
-      description: "(bike-tdd) c8 include all files",
+      description: "(only-test) c8 include all files",
+    })
+    .option("c8-exclude", {
+      alias: "x",
+      type: "boolean",
+      default: false,
+      description: "(only-test) c8 exclude all files",
     })
     .option("c8-config", {
       type: "string",
       default: "",
-      description: "(bike-tdd) c8 path to JSON configuration file",
+      description: "(only-test) c8 path to JSON configuration file",
     })
-    .option("c8-exclude", {
+    .option("c8-skip-full", {
       type: "boolean",
-      default: false,
-      description: "(bike-tdd) c8 exclude all files",
-    })
-    .option("skip-full", {
-      type: "boolean",
-      description: "(bike-tdd) c8 skip full in text that ignore in html",
+      description: "(only-test) c8 skip full in text that ignore in html",
     }).argv;
 
   // 根据conf参数，初始化一些条件和逻辑
@@ -176,8 +184,8 @@ function getConfig(argv) {
     }
   }
 
-  if (conf.reporter === "text" && conf["skip-full"] == undefined) {
-    conf["skip-full"] = true;
+  if (conf.reporter === "text" && conf["c8-skip-full"] == undefined) {
+    conf["c8-skip-full"] = true;
   }
 
   if (!conf.entry) {

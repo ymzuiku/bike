@@ -56,8 +56,6 @@ async function bike(conf) {
     sourcemap: conf.sourcemap,
   };
 
-  console.log(esbuildOptions);
-
   const publicPath = resolve(cwd, conf.public);
   if (fs.existsSync(publicPath)) {
     fs.copySync(publicPath, resolve(cwd, conf.out));
@@ -91,7 +89,8 @@ async function bike(conf) {
   }
 
   if (conf.start) {
-    require(resolve(cwd, conf.out + "/" + conf.outfile));
+    // require(resolve(cwd, conf.out + "/" + conf.outfile));
+    fork();
   } else if (conf.watch) {
     fork();
     let lock = false;
