@@ -98,9 +98,11 @@ export function createSo(name: string) {
         logFail(name, cache.errors[name].stack);
       }
     },
-    fail: (err: Error) => {
-      cache.errors[name] = new Error(err.message);
-      logFail(name, cache.errors[name].stack);
+    fail: (msg: string) => {
+      if (msg !== undefined && msg !== "" && msg !== null) {
+        cache.errors[name] = new Error(msg);
+        logFail(name, cache.errors[name].stack);
+      }
     },
   };
 }

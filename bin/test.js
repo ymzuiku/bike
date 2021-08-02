@@ -66,12 +66,6 @@ global.bikeReporter = "${conf.reporter || "none"}";
     }
   }
 
-  // async function after() {
-  //   if (conf.reporter) {
-  //     c8(conf);
-  //   }
-  // }
-
   if (conf.reporter && !conf.watch) {
     c8({ ...conf, before });
   } else {
