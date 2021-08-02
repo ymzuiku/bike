@@ -1,6 +1,6 @@
 import { createSo, So } from "./so";
 import { cache } from "./cache";
-import { gray, green, logPass, red, title } from "./log";
+import { gray, green, logPass, red, greenBold, title } from "./log";
 import { event } from "./event";
 import { resolve } from "path";
 
@@ -46,9 +46,9 @@ async function runOne(key: string) {
     } else {
       console.log(
         red(
-          `FAIL: ${errors.length}, PASS: ${
+          `== FAIL: ${errors.length}, PASS: ${
             doing.length - errors.length
-          }, ALL: ${doing.length}`
+          }, ALL: ${doing.length} ==`
         )
       );
     }
@@ -78,9 +78,9 @@ async function runTest() {
   const errs = Object.keys(cache.matchIt);
   console.log(
     gray(
-      `Match case ${errs.length}. Please press key: ${green(
+      `Match case ${errs.length}. Please press key: ${greenBold(
         "a"
-      )} retest all case, ${green("1~9")} focus number case, ${green(
+      )} test all case, ${greenBold("1~9")} focus number case, ${greenBold(
         "q"
       )} quit.`
     )
