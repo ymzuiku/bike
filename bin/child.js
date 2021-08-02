@@ -1,16 +1,6 @@
 const { spawn } = require("child_process");
 
 let lastChild = null;
-let coverMatch = new RegExp("----|----");
-
-function log(data) {
-  const base = data.toString("utf8");
-  const v = data.toString("utf8").trim();
-  if (!v) {
-    return;
-  }
-  console.log(base);
-}
 
 function child(conf) {
   if (lastChild) {
@@ -50,4 +40,4 @@ function child(conf) {
   return ls;
 }
 
-module.exports = child;
+module.exports = { child };

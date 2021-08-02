@@ -3,7 +3,7 @@ const resolve = require("path").resolve;
 const fs = require("fs-extra");
 const { bike } = require("./index");
 
-module.exports = (conf) => {
+const test = (conf) => {
   conf.entry = resolve(conf.out, "index.ts");
   if (!conf.watch) {
     conf.start = true;
@@ -68,3 +68,5 @@ global.bikeReporter = "${conf.reporter || "none"}";
 
   bike({ ...conf, before });
 };
+
+module.exports = { test };

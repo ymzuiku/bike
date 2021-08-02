@@ -2,8 +2,7 @@ require("source-map-support").install();
 const esbuild = require("esbuild");
 const { resolve } = require("path");
 const { getExternals } = require("./getExternals");
-const getConfig = require("./getConfig");
-const child = require("./child");
+const { child } = require("./child");
 const { copyPackage } = require("./copyPackage");
 const { workerFork, workerStart } = require("./worker");
 
@@ -132,5 +131,4 @@ async function bike(conf) {
 
 module.exports = {
   bike,
-  getConfig,
 };

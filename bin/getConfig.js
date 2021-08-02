@@ -239,4 +239,4 @@ function getConfig(argv) {
   return conf;
 }
 
-module.exports = getConfig;
+module.exports = { getConfig };

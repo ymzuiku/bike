@@ -73,7 +73,7 @@ export function createSo(name: string) {
     },
     error: (err: Error, other: Error) => {
       if ((!err && other) || (!other && err) || (!err && !other)) {
-        cache.errors[name] = new Error(`error ${err} isn't ${other}`);
+        cache.errors[name] = new Error(`${err} isn't ${other}`);
         logFail(name, cache.errors[name].stack);
         return;
       }

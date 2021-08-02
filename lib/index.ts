@@ -1,6 +1,6 @@
 import { createSo, So } from "./so";
 import { cache } from "./cache";
-import { gray, green, logPass, red } from "./log";
+import { gray, green, logPass, red, title } from "./log";
 import { local } from "./local";
 import { resolve } from "path";
 
@@ -8,7 +8,32 @@ require("source-map-support").install();
 const bikeTestAll = () => (global as any).bikeTestAll;
 const bikeReporter = () => (global as any).bikeReporter;
 
+// const parseLine = (str) => {
+//   const len = str.length < 20 ? 20 : str.length;
+//   let out = "";
+//   for (let i = 0; i < len; i++) {
+//     out += "-";
+//   }
+//   return out;
+// };
+
+// const parseTitle = (str) => {
+//   if (str.length > 20) {
+//     return str;
+//   }
+//   const len = ~~((20 - str.length) / 2);
+//   let out = "";
+//   for (let i = 0; i < len; i++) {
+//     out += " ";
+//   }
+//   return out + str;
+// };
+
+let num = 0;
+
 async function runOne(key: string) {
+  num += 1;
+
   if (cache.each) {
     const fn = await Promise.resolve(cache.each(key, cache.it[key]));
     if (fn) {
@@ -17,16 +42,19 @@ async function runOne(key: string) {
   }
   if (!cache.it[key]) {
     console.error(
-      red(`[FOCUS] ${key} is not match any test, you can try RegExp: /${key}/`)
+      red(`[${num}] ${key} is not match any test, you can try RegExp: /${key}/`)
     );
     return;
   }
+
+  console.log("\t");
+  console.log(title(`[${num}] ${key}:`));
   await Promise.resolve(cache.it[key]());
-  if (!cache.errors[key]) {
-    logPass(key);
-  }
+
   cache.done += 1;
+
   if (cache.done === Object.keys(cache.matchIt).length) {
+    console.log("\t");
     const doing = Object.keys(cache.matchIt);
     const errors = Object.keys(cache.errors);
     // 若是测试所有，不进行 test.config 调整
@@ -44,12 +72,13 @@ async function runOne(key: string) {
         )
       );
     }
-    console.log(gray(`Auto retest on change...`));
+    // console.log(gray(`Auto retest on change...`));
     if (bikeReporter() === "html") {
       console.log(
         `Coverage html at: ${resolve(process.cwd(), "coverage")}/index.html`
       );
     }
+    console.log("\t");
   }
 }
 
@@ -71,7 +100,6 @@ async function runTest() {
   errs.forEach((key) => {
     console.log(gray(`- ${key}`));
   });
-  console.log(" ");
 
   errs.forEach(runOne);
 }
