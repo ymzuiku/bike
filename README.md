@@ -10,6 +10,8 @@ Use cluster auto fork code at file save;
 npm install --save-dev bike
 ```
 
+## Simple Example
+
 add package.json
 
 ```json
@@ -17,12 +19,11 @@ add package.json
   "scripts": {
     "dev": "bike -w",
     "test": "bike -w --test",
+    "cover": "bike -r=html",
     "build": "bike"
   }
 }
 ```
-
-## First Start
 
 Run Dev Server:
 
@@ -42,6 +43,12 @@ Run test
 npm run test
 ```
 
+View Cover
+
+```bash
+npm run cover
+```
+
 ## Use CLI Options
 
 Use `bike --help`:
@@ -50,15 +57,17 @@ Use `bike --help`:
 Options:
       --help          Show help                                        [boolean]
       --version       Show version number                              [boolean]
-  -s, --src           Source dir                       [string] [default: "src"]
-  -o, --out           Build out dir                   [string] [default: "dist"]
-  -p, --public        Auto copy public's files to out
+      --show-config   Log cli config at run           [boolean] [default: false]
+      --src           Source dir                       [string] [default: "src"]
+      --out           Build out dir, server default dist, test default dist-test
+                                                                        [string]
+      --public        Auto copy public's files to out
                                                     [string] [default: "public"]
       --entry         Main typescript file, default: ${src}/index.ts    [string]
       --lib           If lib is true, not compiler dependencies
                                                       [boolean] [default: false]
-  -b, --base          Pick in nodejs, browser, aoife[string] [default: "nodejs"]
-  -m, --minify        Esbuild minify                                   [boolean]
+      --base          Pick in nodejs, browser, aoife[string] [default: "nodejs"]
+      --minify        Esbuild minify                                   [boolean]
       --copy          copy file to dist                                  [array]
   -e, --external      Esbuild external                                   [array]
       --define        Esbuild define                                    [string]
@@ -69,6 +78,8 @@ Options:
       --jsx-factory   Esbuild jsx-factory                               [string]
       --jsx-fragment  Esbuild jsx-fragment                              [string]
   -t, --test          Is use test                     [boolean] [default: false]
+      --all           Always test all case, ignore .bike.test.yaml
+                                                      [boolean] [default: false]
       --start         Start server after on build     [boolean] [default: false]
       --platform      Esbuild platform                [string] [default: "node"]
   -w, --watch         Watch dir on change reload      [boolean] [default: false]

@@ -53,7 +53,7 @@ module.exports = (conf) => {
       `${code}
 
 global.bikeTestAll = ${conf.all};
-global.bikeReporter = ${conf.reporter || `"none"`};
+global.bikeReporter = "${conf.reporter || "none"}";
 `
     );
   }

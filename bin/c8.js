@@ -40,7 +40,7 @@ function c8(conf) {
 
   ls.on("close", (code) => {
     if (conf.reporter === "html") {
-      console.log(`Builded reporter html:`);
+      console.log(`Open Browser reporter html:`);
       console.log(`${path.resolve(process.cwd(), "coverage")}/index.html`);
     }
   });

@@ -3,6 +3,11 @@ const { hideBin } = require("yargs/helpers");
 
 function getConfig(argv) {
   const conf = yargs(hideBin(argv))
+    .option("show-config", {
+      type: "boolean",
+      default: false,
+      description: "Log cli config at run",
+    })
     .option("src", {
       type: "string",
       default: "src",
@@ -75,6 +80,7 @@ function getConfig(argv) {
       description: "Esbuild jsx-fragment",
     })
     .option("test", {
+      alias: "t",
       type: "boolean",
       default: false,
       description: "Is use test",
@@ -140,6 +146,10 @@ function getConfig(argv) {
       description: "(bike-tdd) c8 skip full in text that ignore in html",
     }).argv;
 
+  if (conf.reporter === "text" || conf.reporter === "html") {
+    conf.test = true;
+  }
+
   if (!conf.out) {
     if (conf.test) {
       conf.out = "dist-test";
@@ -186,6 +196,20 @@ function getConfig(argv) {
     if (!conf["jsx-fragment"]) {
       conf["jsx-fragment"] = "aoife.Frag";
     }
+  }
+
+  if (conf["show-config"]) {
+    delete conf["$0"];
+    delete conf["_"];
+    Object.keys(conf).forEach((k) => {
+      if (/-/.test(k) || k.length === 1) {
+        delete conf[k];
+      }
+    });
+    console.log(conf);
+    console.log(" ");
+    console.log("Stop with only show config");
+    process.exit();
   }
 
   return conf;
