@@ -8,7 +8,6 @@ const getConfig = require("./getConfig");
 const fs = require("fs-extra");
 const cwd = process.cwd();
 const cluster = require("cluster");
-const { default: c8 } = require("./c8");
 const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
 const cacheTestPath = resolve(cwd, ".bike.test.yaml");
 
@@ -18,8 +17,6 @@ function getMsg(msg) {
   }
   return msg.replace("bike::", "");
 }
-
-// const { getPkg } = require("./getPkg");
 
 async function bike(config) {
   if (cluster.isWorker) {
@@ -39,6 +36,7 @@ async function bike(config) {
         console.error(error);
       }
     });
+
     return;
   }
   if (!fs.existsSync(resolve(cwd, config.out))) {
