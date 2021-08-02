@@ -131,11 +131,6 @@ function getConfig(argv) {
       type: "string",
       description: "(only-test) c8 reporter, pick in :[text, html]",
     })
-    // .option("reporter-mini", {
-    //   type: "boolean",
-    //   default: true,
-    //   description: "(only-test) c8 reporter mini line",
-    // })
     .option("match", {
       type: "string",
       default: "(.test|.spec|_test|_spec)",
