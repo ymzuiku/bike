@@ -76,9 +76,9 @@ function getExternals(conf) {
   ];
 
   const tsconfigPath = resolve(cwd, "tsconfig.json");
-  // const selfPkg = require(resolve(__dirname, "../package.json"));
-  // externals = [...externals, ...getKeys(selfPkg.dependencies)];
-  // externals = [...externals, ...getKeys(selfPkg.devDependencies)];
+  const selfPkg = require(resolve(__dirname, "../package.json"));
+  externals = [...externals, ...getKeys(selfPkg.dependencies)];
+  externals = [...externals, ...getKeys(selfPkg.devDependencies)];
 
   const pkg = getPkg();
 
