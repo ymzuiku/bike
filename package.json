@@ -1,8 +1,11 @@
 {
   "name": "bike",
   "version": "0.3.0",
-  "main": "es/index.ts",
+  "main": "lib/index.ts",
   "types": "lib/index.ts",
+  "scripts": {
+    "es": "node bike.js --src=lib --out=es"
+  },
   "exports": {
     "import": "./lib/index.ts"
   },

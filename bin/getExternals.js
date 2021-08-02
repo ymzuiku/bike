@@ -11,6 +11,9 @@ function getPkg() {
 }
 
 function getKeys(obj) {
+  if (!obj) {
+    return [];
+  }
   const keys = [];
   Object.keys(obj).forEach((k) => {
     const val = obj[k];
@@ -73,15 +76,22 @@ function getExternals(conf) {
   ];
 
   const tsconfigPath = resolve(cwd, "tsconfig.json");
-  const selfPkg = require(resolve(__dirname, "../package.json"));
-  externals = [...externals, ...Object.keys(selfPkg.dependencies)];
-  externals = [...externals, ...Object.keys(selfPkg.devDependencies)];
+  // const selfPkg = require(resolve(__dirname, "../package.json"));
+  // externals = [...externals, ...getKeys(selfPkg.dependencies)];
+  // externals = [...externals, ...getKeys(selfPkg.devDependencies)];
 
   const pkg = getPkg();
 
   if (pkg) {
     if (!conf.depend && pkg.dependencies) {
-      externals = [...externals, ...getKeys(pkg.dependencies)];
+      const depend = getKeys(pkg.dependencies);
+      if (depend.indexOf("bike") > -1) {
+        console.error(
+          "Error: bike is in package.dependencies, Please move bike to package.devDependencies."
+        );
+        process.exit();
+      }
+      externals = [...externals, ...depend];
     }
     if (pkg.devDependencies) {
       externals = [...externals, ...getKeys(pkg.devDependencies)];

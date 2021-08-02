@@ -19,7 +19,7 @@ function getConfig(argv) {
     })
     .option("outfile", {
       type: "string",
-      default: "index.mjs",
+      default: "index.js",
       description: "Build out dir index name",
     })
     .option("public", {
@@ -79,7 +79,6 @@ function getConfig(argv) {
     })
     .option("format", {
       type: "string",
-      default: "esm",
       description: "Esbuild format",
     })
     .option("sourcemap", {
