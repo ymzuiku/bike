@@ -12,8 +12,7 @@ function getConfig(argv) {
     .option("out", {
       alias: "o",
       type: "string",
-      default: "dist",
-      description: "Build out dir",
+      description: "Build out dir, server default dist, test default dist-test",
     })
     .option("public", {
       alias: "p",
@@ -86,6 +85,11 @@ function getConfig(argv) {
       default: false,
       description: "Is use test",
     })
+    .option("test-all", {
+      type: "boolean",
+      default: false,
+      description: "Always test all case, ignore .bike.test.config",
+    })
     .option("start", {
       type: "boolean",
       default: false,
@@ -142,6 +146,14 @@ function getConfig(argv) {
       description: "(bike-tdd) c8 skip full in text that ignore in html",
     }).argv;
 
+  if (!conf.out) {
+    if (conf.test) {
+      conf.out = "dist-test";
+    } else {
+      conf.out = "dist";
+    }
+  }
+
   if (conf.reporter === "text" && conf["skip-full"] == undefined) {
     conf["skip-full"] = true;
   }
@@ -158,15 +170,15 @@ function getConfig(argv) {
 
   const brower = () => {
     if (!conf.watch && !conf.start) {
-      if (conf["minify"] === undefined) {
-        conf["minify"] = true;
+      if (conf.minify === undefined) {
+        conf.minify = true;
       }
     }
-    if (conf["format"] === undefined) {
-      conf["format"] = "esm";
+    if (conf.format === undefined) {
+      conf.format = "esm";
     }
-    if (conf["splitting"] === undefined) {
-      conf["splitting"] = true;
+    if (conf.splitting === undefined) {
+      conf.splitting = true;
     }
   };
 

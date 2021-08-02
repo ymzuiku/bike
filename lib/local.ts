@@ -1,8 +1,8 @@
 import fs from "fs-extra";
 import { resolve } from "path";
 const cwd = process.cwd();
-const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike-test-ignore");
-const cacheTestPath = resolve(cwd, ".bike-test");
+const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
+const cacheTestPath = resolve(cwd, ".bike.test.config");
 
 const FOCUS = "------ FOCUS ------";
 const LAST = "------ FAILS ------";
@@ -54,7 +54,7 @@ ${allList.join("\n")}
   );
 }
 
-export const testLocal = {
+export const local = {
   // 读取文件,并且返回这次需要执行的任务
   load: (it: string[]) => {
     if (!fs.existsSync(cacheTestPath)) {

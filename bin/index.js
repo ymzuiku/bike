@@ -9,8 +9,8 @@ const fs = require("fs-extra");
 const cwd = process.cwd();
 const cluster = require("cluster");
 const { default: c8 } = require("./c8");
-const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike-test-ignore");
-const cacheTestPath = resolve(cwd, ".bike-test");
+const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
+const cacheTestPath = resolve(cwd, ".bike.test.config");
 
 function getMsg(msg) {
   if (!/^bike::/.test(msg)) {
@@ -122,25 +122,27 @@ async function bike(config) {
       }, 65);
     });
 
-    if (!fs.existsSync(cacheTestPath)) {
-      fs.writeFileSync(cacheTestPath, "");
+    // 若不是测试所有，监听测试配置文件的修改
+    if (!config.testAll) {
+      if (!fs.existsSync(cacheTestPath)) {
+        fs.writeFileSync(cacheTestPath, "");
+      }
+      fs.watch(cacheTestPath, async (e, f) => {
+        if (fs.existsSync(ignoreChangeTestPath)) {
+          fs.rmSync(ignoreChangeTestPath);
+          return;
+        }
+        if (lock) {
+          return;
+        }
+        lock = true;
+        await build();
+        fork();
+        setTimeout(() => {
+          lock = false;
+        }, 65);
+      });
     }
-
-    fs.watch(cacheTestPath, async (e, f) => {
-      if (fs.existsSync(ignoreChangeTestPath)) {
-        fs.rmSync(ignoreChangeTestPath);
-        return;
-      }
-      if (lock) {
-        return;
-      }
-      lock = true;
-      await build();
-      fork();
-      setTimeout(() => {
-        lock = false;
-      }, 65);
-    });
   }
 }
 

@@ -1,7 +1,9 @@
 import { createSo, So } from "./so";
 import { cache } from "./cache";
 import { gray, green, logPass, red } from "./log";
-import { testLocal } from "./testLocal";
+import { local } from "./local";
+
+const testAll = () => (global as any).bikeTestAll;
 
 async function runOne(key: string) {
   if (cache.each) {
@@ -24,7 +26,10 @@ async function runOne(key: string) {
   if (cache.done === Object.keys(cache.matchIt).length) {
     const doing = Object.keys(cache.matchIt);
     const errors = Object.keys(cache.errors);
-    testLocal.save(doing, errors);
+    // 若是测试所有，不进行 test.config 调整
+    if (!testAll()) {
+      local.save(doing, errors);
+    }
     if (errors.length === 0) {
       console.log(green(`PASS ALL, Done ${doing.length} case.`));
     } else {
@@ -36,8 +41,12 @@ async function runOne(key: string) {
 }
 
 async function runTest() {
-  const it = testLocal.load(Object.keys(cache.it));
-  it.forEach((key: string) => {
+  // 读取需要测试的对象
+  const task = testAll()
+    ? Object.keys(cache.it)
+    : local.load(Object.keys(cache.it));
+
+  task.forEach((key: string) => {
     cache.matchIt[key] = cache.it[key];
   });
 

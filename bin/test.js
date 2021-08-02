@@ -5,7 +5,7 @@ const { bike } = require("./index");
 const c8 = require("./c8");
 
 module.exports = (conf) => {
-  conf.entry = resolve(conf.out, "bike-tdd.ts");
+  conf.entry = resolve(conf.out, "index.ts");
   if (!conf.watch) {
     conf.start = true;
   }
@@ -48,7 +48,12 @@ module.exports = (conf) => {
       });
     }, 20);
     const code = files.map((file) => `import "${file}";`).join("\n");
-    await fs.writeFile(conf.entry, code);
+    await fs.writeFile(
+      conf.entry,
+      `global.bikeTestAll = ${conf.testAll};
+${code}
+`
+    );
   }
 
   let createdCoded = false;
