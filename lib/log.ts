@@ -11,13 +11,17 @@ export const red = (str: string) => chalk.bold.redBright(str);
 export function logFail(name: string, stack: string) {
   stack.split("\n").forEach((line) => {
     if (/Error: /.test(line)) {
-      console.log(" ");
       const [_, ...rest] = line.split("Error: ");
       line = rest.join("Error: ");
-      console.log(`${red("-- Fail")} ${gray(name + ":")} ${white(line)}`);
+      console.log(`${red("-- Fail")} ${red(name + ":")} ${white(line)}`);
     }
     if (cwdReg.test(line)) {
-      console.log(green(`   ${line.split(cwd)[1]}`));
+      console.log(green(`${line.split(cwd)[1]}`));
+      console.log(" ");
     }
   });
+}
+
+export function logPass(name: string) {
+  console.log(`${green("-- PASS")} ${green(name)}`);
 }

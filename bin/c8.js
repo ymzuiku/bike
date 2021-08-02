@@ -3,14 +3,12 @@ const path = require("path");
 function c8(conf) {
   const { spawn } = require("child_process");
   const ls = spawn(
-    "c8",
+    "npx",
     [
+      "c8",
       `-r=${conf.reporter}`,
-      // "--wrapper-length",
-      // "150",
       ...(conf.c8Include ? ["--include", conf.c8Include] : []),
       ...(conf.c8Config ? ["--config", conf.c8Config] : []),
-      // ...(conf.c8Exclude ? ["--exclude", conf.c8Exclude] : []),
       "--exclude",
       ["./coverage", "./node_modules", conf.c8Exclude]
         .filter(Boolean)
@@ -22,12 +20,22 @@ function c8(conf) {
     ].filter(Boolean)
   );
 
+  let atC8 = false;
   ls.stdout.on("data", (data) => {
+    if (conf.reporter === "html") {
+      return;
+    }
+    if (!atC8 && /% Stmts/.test(data)) {
+      atC8 = true;
+    }
+    if (!atC8) {
+      return;
+    }
     console.log(`${data}`);
   });
 
   ls.stderr.on("data", (data) => {
-    console.error(`${data}`);
+    console.log(`${data}`);
   });
 
   ls.on("close", (code) => {

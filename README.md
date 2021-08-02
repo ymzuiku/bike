@@ -7,7 +7,7 @@ Use cluster auto fork code at file save;
 ## Install
 
 ```sh
-yarn add bike -D
+npm install --save-dev bike
 ```
 
 add package.json
@@ -21,7 +21,7 @@ add package.json
 }
 ```
 
-## Use
+## First Start
 
 Run Dev Server:
 
@@ -35,7 +35,7 @@ Build release
 yarn build
 ```
 
-## CLI Options / Configuration
+## Use CLI Options
 
 Use `bike --help`:
 
@@ -48,16 +48,17 @@ Options:
   -p, --public        Auto copy public's files to out
                                                     [string] [default: "public"]
       --entry         Main typescript file, default: ${src}/index.ts    [string]
-      --keep          Don't compiler dependencies     [boolean] [default: false]
+      --lib           If lib is true, not compiler dependencies
+                                                      [boolean] [default: false]
   -b, --base          Pick in nodejs, browser, aoife[string] [default: "nodejs"]
-  -m, --minify        Esbuild minify                  [boolean] [default: false]
+  -m, --minify        Esbuild minify                                   [boolean]
       --copy          copy file to dist                                  [array]
   -e, --external      Esbuild external                                   [array]
       --define        Esbuild define                                    [string]
       --target        Esbuild target                   [string] [default: "es6"]
       --splitting     Esbuild splitting               [boolean] [default: false]
       --format        Esbuild format                                    [string]
-      --sourcemap     Esbuild use sourcemap            [boolean] [default: true]
+      --sourcemap     Esbuild use sourcemap                            [boolean]
       --jsx-factory   Esbuild jsx-factory                               [string]
       --jsx-fragment  Esbuild jsx-fragment                              [string]
   -t, --test          Is use test                     [boolean] [default: false]
@@ -76,32 +77,4 @@ Options:
       --c8-exclude    (bike-tdd) c8 exclude all files [boolean] [default: false]
       --skip-full     (bike-tdd) c8 skip full in text that ignore in html
                                                                        [boolean]
-```
-
-## Copy Files
-
-bike 默认会拷贝 .env 文件到 dist 中，若要添加其他文件，可以添加 --copy 参数:
-
-```
-bike --copy=package.json --copy=README.md
-```
-
-若需要增加其他文件，可以配置 package.json 的 copy 属性：
-
-package.json:
-
-```json
-{
-  "bike": {
-    "copy": [".env.local", ".env.test"]
-  }
-}
-```
-
-## keep Dependencies
-
-bike 在非 watch 环境，会将所有依赖编译到一个 index.js 中，方便生产环境不需要安装依赖，若希望如此，可以添加 --keep 参数，表示不编译依赖，并且使用 --copy 拷贝依赖所需文件到编译目录：
-
-```
-bike --keep --copy=package.json --copy=yarn.lock
 ```

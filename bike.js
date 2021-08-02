@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
-const { bike, loadArgs } = require("./bin");
-const conf = loadArgs(process.argv);
-
-bike(conf);
+const { getConfig } = require("./bin");
+const conf = getConfig(process.argv);
+if (conf.test) {
+  const fn = require("./bin/test");
+  fn(conf);
+} else {
+  const fn = require("./bin/serve");
+  fn(conf);
+}

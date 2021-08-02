@@ -1,40 +1,94 @@
 import { createSo, So } from "./so";
 import { cache } from "./cache";
-import { gray, green } from "./log";
+import { gray, green, logPass, red } from "./log";
+import { testLocal } from "./testLocal";
 
-function runTest() {
-  const errs = Object.keys(cache.errors);
-  if (errs.length > 0) {
-    errs.forEach((key) => {
-      cache.it[key]();
-    });
+async function runOne(key: string) {
+  if (cache.each) {
+    const fn = await Promise.resolve(cache.each(key, cache.it[key]));
+    if (fn) {
+      cache.it[key] = fn;
+    }
+  }
+  if (!cache.it[key]) {
+    console.error(
+      red(`[FOCUS] ${key} is not match any test, you can try RegExp: /${key}/`)
+    );
     return;
   }
-  const errs2 = Object.keys(cache.it);
-  errs2.forEach((key) => {
-    cache.it[key]();
+  await Promise.resolve(cache.it[key]());
+  if (!cache.errors[key]) {
+    logPass(key);
+  }
+  cache.done += 1;
+  if (cache.done === Object.keys(cache.matchIt).length) {
+    const doing = Object.keys(cache.matchIt);
+    const errors = Object.keys(cache.errors);
+    testLocal.save(doing, errors);
+    if (errors.length === 0) {
+      console.log(green(`PASS ALL, Done ${doing.length} case.`));
+    } else {
+      console.log(
+        red(`FAIL, Done ${doing.length - errors.length}/${doing.length} case.`)
+      );
+    }
+  }
+}
+
+async function runTest() {
+  const it = testLocal.load(Object.keys(cache.it));
+  it.forEach((key: string) => {
+    cache.matchIt[key] = cache.it[key];
   });
+
+  if (cache.before) {
+    await Promise.resolve(cache.before());
+  }
+  const errs = Object.keys(cache.matchIt);
+  console.log(gray("CURRENT TASK:"));
+  errs.forEach((key) => {
+    console.log(gray(`-- ${key}`));
+  });
+  console.log(" ");
+
+  errs.forEach(runOne);
 }
 
 const test = {
+  each: (fn: (key: string, testing: Function) => any) => {
+    if (cache.each) {
+      throw new Error("[bike] test.each can only be set once");
+    }
+    cache.each = fn;
+  },
+  before: (fn: Function) => {
+    if (cache.before) {
+      throw new Error("[bike] test.before can only be set once");
+    }
+    cache.before = fn;
+  },
   it: (name: string, fn: (so: So) => any) => {
+    if (cache.it[name]) {
+      throw new Error(
+        `Error: ${name} is defined test.it, keep test name is unique.`
+      );
+    }
     const so = createSo(name);
-    cache.it[name] = () => {
-      fn(so);
+    cache.it[name] = async () => {
+      await Promise.resolve(fn(so));
     };
   },
 };
 
 setTimeout(() => {
-  console.log(
-    gray(
-      `Please input ${green("f")}: Run last fail; ${green(
-        "e"
-      )}: Run each fail; ${green("a")}: Run all; ${green(
-        "t"
-      )}: Text cover; ${green("h")}: Html cover.`
-    )
-  );
+  // console.log(gray(`Auto watch last fails...`));
+  // console.log(
+  //   gray(
+  //     `Auto watch last fails... Please input ${green("a")}: Run all; ${green(
+  //       "t"
+  //     )}: Text cover; ${green("h")}: Html cover.`
+  //   )
+  // );
   runTest();
 }, 35);
 

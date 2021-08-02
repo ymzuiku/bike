@@ -41,14 +41,26 @@ export function createSo(name: string) {
       }
     },
     equal: (a: any, b: any) => {
-      if (!eq(a, b)) {
+      if (a !== b) {
         cache.errors[name] = new Error(`${a} isn't equal ${b}`);
         logFail(name, cache.errors[name].stack);
       }
     },
     notEqual: (a: any, b: any) => {
-      if (eq(a, b)) {
+      if (a === b) {
         cache.errors[name] = new Error(`${a} is equal ${b}`);
+        logFail(name, cache.errors[name].stack);
+      }
+    },
+    deepEqual: (a: any, b: any) => {
+      if (!eq(a, b)) {
+        cache.errors[name] = new Error(`${a} isn't deep equal ${b}`);
+        logFail(name, cache.errors[name].stack);
+      }
+    },
+    notDeepEqual: (a: any, b: any) => {
+      if (eq(a, b)) {
+        cache.errors[name] = new Error(`${a} is deep equal ${b}`);
         logFail(name, cache.errors[name].stack);
       }
     },
@@ -60,13 +72,29 @@ export function createSo(name: string) {
       }
     },
     error: (err: Error, other: Error) => {
-      if (!err) {
+      if ((!err && other) || (!other && err) || (!err && !other)) {
+        cache.errors[name] = new Error(`error ${err} isn't ${other}`);
+        logFail(name, cache.errors[name].stack);
+        return;
+      }
+
+      if (err.message === other.message) {
+        return;
+      }
+
+      if (err.message.indexOf(other.message) > -1) {
+        cache.errors[name] = new Error(`error ${err} isn't ${other}`);
+        logFail(name, cache.errors[name].stack);
+      }
+    },
+    string: (target: string, has: string) => {
+      if (!target) {
         cache.errors[name] = new Error(`error isn't Error`);
         logFail(name, cache.errors[name].stack);
         return;
       }
-      if ((!other && err) || err.message.indexOf(other.message) > -1) {
-        cache.errors[name] = new Error(`error ${err} isn't ${other}`);
+      if ((!has && target) || target.indexOf(has) > -1) {
+        cache.errors[name] = new Error(`error ${target} isn't ${has}`);
         logFail(name, cache.errors[name].stack);
       }
     },

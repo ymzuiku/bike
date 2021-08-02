@@ -25,10 +25,10 @@ function getConfig(argv) {
       type: "string",
       description: "Main typescript file, default: ${src}/index.ts",
     })
-    .option("keep", {
+    .option("lib", {
       type: "boolean",
       default: false,
-      description: "Don't compiler dependencies",
+      description: "If lib is true, not compiler dependencies",
     })
     .option("base", {
       alias: "b",
@@ -157,7 +157,6 @@ function getConfig(argv) {
   }
 
   const brower = () => {
-    console.log("bbbbbbbbbb");
     if (!conf.watch && !conf.start) {
       if (conf["minify"] === undefined) {
         conf["minify"] = true;

@@ -19,8 +19,7 @@
     "url": "git+https://github.com/ymzuiku/bike.git"
   },
   "bin": {
-    "bike": "bike.js",
-    "bike-test": "bike-test.js"
+    "bike": "bike.js"
   },
   "keywords": [],
   "author": "",

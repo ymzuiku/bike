@@ -51,7 +51,7 @@ function getExternals(conf) {
   const pkg = getPkg();
 
   if (pkg) {
-    if (conf.watch && !conf.keep && pkg.dependencies) {
+    if (conf.watch && !conf.lib && pkg.dependencies) {
       externals = [...externals, ...getKeys(pkg.dependencies)];
     }
     if (pkg.devDependencies) {

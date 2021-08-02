@@ -3,20 +3,31 @@ const esbuild = require("esbuild");
 const { resolve } = require("path");
 const { getExternals } = require("./getExternals");
 const { getCopyFiles } = require("./getCopyFiles");
-const loadArgs = require("./getConfig");
+const getConfig = require("./getConfig");
 
 const fs = require("fs-extra");
 const cwd = process.cwd();
 const cluster = require("cluster");
+const { default: c8 } = require("./c8");
+const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike-test-ignore");
+const cacheTestPath = resolve(cwd, ".bike-test");
+
+function getMsg(msg) {
+  if (!/^bike::/.test(msg)) {
+    return;
+  }
+  return msg.replace("bike::", "");
+}
+
 // const { getPkg } = require("./getPkg");
 
 async function bike(config) {
   if (cluster.isWorker) {
     process.on("message", (msg) => {
-      if (!/^bike::/.test(msg)) {
+      msg = getMsg(msg);
+      if (!msg) {
         return;
       }
-      msg = msg.replace("bike::", "");
       const conf = JSON.parse(msg);
       // 监听Promise没有被捕获的失败函数
       process.on("unhandledRejection", function (err, promise) {
@@ -40,19 +51,6 @@ async function bike(config) {
       fs.copyFileSync(p, resolve(cwd, config.out, file));
     }
   });
-
-  // const pkg = getPkg();
-  // if (pkg) {
-  //   const _pkg = JSON.parse(JSON.stringify(pkg));
-  //   delete _pkg.devDependencies;
-  //   if (!config.watch) {
-  //     delete _pkg.dependencies;
-  //   }
-  //   fs.writeFileSync(
-  //     resolve(cwd, config.out, "package.json"),
-  //     JSON.stringify(_pkg, null, 2)
-  //   );
-  // }
 
   const esbuildOptions = {
     entryPoints: [resolve(cwd, config.entry)],
@@ -123,10 +121,30 @@ async function bike(config) {
         lock = false;
       }, 65);
     });
+
+    if (!fs.existsSync(cacheTestPath)) {
+      fs.writeFileSync(cacheTestPath, "");
+    }
+
+    fs.watch(cacheTestPath, async (e, f) => {
+      if (fs.existsSync(ignoreChangeTestPath)) {
+        fs.rmSync(ignoreChangeTestPath);
+        return;
+      }
+      if (lock) {
+        return;
+      }
+      lock = true;
+      await build();
+      fork();
+      setTimeout(() => {
+        lock = false;
+      }, 65);
+    });
   }
 }
 
 module.exports = {
   bike,
-  loadArgs,
+  getConfig,
 };
