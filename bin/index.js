@@ -5,15 +5,17 @@ const { getExternals } = require("./getExternals");
 const { child } = require("./child");
 const { copyPackage } = require("./copyPackage");
 const { workerFork, workerStart } = require("./worker");
+const { keyboard, cacheTestPath, cacheIgnoreTestPath } = require("./keyboard");
 
 const fs = require("fs-extra");
 const cwd = process.cwd();
-const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
-const cacheTestPath = resolve(cwd, ".bike.test.yaml");
 
 async function bike(conf) {
   if (workerStart(conf)) {
     return;
+  }
+  if (conf.test && conf.watch) {
+    keyboard(conf);
   }
   if (!fs.existsSync(resolve(cwd, conf.out))) {
     fs.mkdirSync(resolve(cwd, conf.out));
@@ -108,11 +110,11 @@ async function bike(conf) {
     // 若不是测试所有，监听测试配置文件的修改
     if (!conf.all) {
       if (!fs.existsSync(cacheTestPath)) {
-        fs.writeFileSync(cacheTestPath, "");
+        fs.writeFileSync(cacheTestPath, "{}");
       }
       fs.watch(cacheTestPath, async (e, f) => {
-        if (fs.existsSync(ignoreChangeTestPath)) {
-          fs.rmSync(ignoreChangeTestPath);
+        if (fs.existsSync(cacheIgnoreTestPath)) {
+          fs.rmSync(cacheIgnoreTestPath);
           return;
         }
         if (lock) {

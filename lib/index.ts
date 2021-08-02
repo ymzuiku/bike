@@ -1,33 +1,12 @@
 import { createSo, So } from "./so";
 import { cache } from "./cache";
 import { gray, green, logPass, red, title } from "./log";
-import { local } from "./local";
+import { event } from "./event";
 import { resolve } from "path";
 
 require("source-map-support").install();
 const bikeTestAll = () => (global as any).bikeTestAll;
 const bikeReporter = () => (global as any).bikeReporter;
-
-// const parseLine = (str) => {
-//   const len = str.length < 20 ? 20 : str.length;
-//   let out = "";
-//   for (let i = 0; i < len; i++) {
-//     out += "-";
-//   }
-//   return out;
-// };
-
-// const parseTitle = (str) => {
-//   if (str.length > 20) {
-//     return str;
-//   }
-//   const len = ~~((20 - str.length) / 2);
-//   let out = "";
-//   for (let i = 0; i < len; i++) {
-//     out += " ";
-//   }
-//   return out + str;
-// };
 
 let num = 0;
 
@@ -57,9 +36,10 @@ async function runOne(key: string) {
     console.log("\t");
     const doing = Object.keys(cache.matchIt);
     const errors = Object.keys(cache.errors);
+    const all = Object.keys(cache.it);
     // 若是测试所有，不进行 test.config 调整
     if (!bikeTestAll()) {
-      local.save(doing, errors);
+      event.save(doing, errors, all);
     }
     if (errors.length === 0) {
       console.log(green(`PASS ALL, Done ${doing.length} case.`));
@@ -86,7 +66,7 @@ async function runTest() {
   // 读取需要测试的对象
   const task = bikeTestAll()
     ? Object.keys(cache.it)
-    : local.load(Object.keys(cache.it));
+    : event.load(Object.keys(cache.it));
 
   task.forEach((key: string) => {
     cache.matchIt[key] = cache.it[key];
