@@ -4,18 +4,15 @@ const { hideBin } = require("yargs/helpers");
 function getConfig(argv) {
   const conf = yargs(hideBin(argv))
     .option("src", {
-      alias: "s",
       type: "string",
       default: "src",
       description: "Source dir",
     })
     .option("out", {
-      alias: "o",
       type: "string",
       description: "Build out dir, server default dist, test default dist-test",
     })
     .option("public", {
-      alias: "p",
       type: "string",
       default: "public",
       description: "Auto copy public's files to out",
@@ -30,13 +27,11 @@ function getConfig(argv) {
       description: "If lib is true, not compiler dependencies",
     })
     .option("base", {
-      alias: "b",
       type: "string",
       default: "nodejs",
       description: "Pick in nodejs, browser, aoife",
     })
     .option("minify", {
-      alias: "m",
       type: "boolean",
       description: "Esbuild minify",
     })
@@ -80,15 +75,14 @@ function getConfig(argv) {
       description: "Esbuild jsx-fragment",
     })
     .option("test", {
-      alias: "t",
       type: "boolean",
       default: false,
       description: "Is use test",
     })
-    .option("test-all", {
+    .option("all", {
       type: "boolean",
       default: false,
-      description: "Always test all case, ignore .bike.test.config",
+      description: "Always test all case, ignore .bike.test.yaml",
     })
     .option("start", {
       type: "boolean",

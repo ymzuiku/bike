@@ -50,8 +50,10 @@ module.exports = (conf) => {
     const code = files.map((file) => `import "${file}";`).join("\n");
     await fs.writeFile(
       conf.entry,
-      `global.bikeTestAll = ${conf.testAll};
-${code}
+      `${code}
+
+global.bikeTestAll = ${conf.all};
+global.bikeReporter = ${conf.reporter || `"none"`};
 `
     );
   }

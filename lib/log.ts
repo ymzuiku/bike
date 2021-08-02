@@ -13,7 +13,7 @@ export function logFail(name: string, stack: string) {
     if (/Error: /.test(line)) {
       const [_, ...rest] = line.split("Error: ");
       line = rest.join("Error: ");
-      console.log(`${red("-- Fail")} ${red(name + ":")} ${white(line)}`);
+      console.log(`${red("- Fail")} ${red(name + ":")} ${white(line)}`);
     }
     if (cwdReg.test(line)) {
       console.log(green(`${line.split(cwd)[1]}`));
@@ -23,5 +23,5 @@ export function logFail(name: string, stack: string) {
 }
 
 export function logPass(name: string) {
-  console.log(`${green("-- PASS")} ${green(name)}`);
+  console.log(`${green("- PASS")} ${green(name)}`);
 }

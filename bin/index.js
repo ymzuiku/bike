@@ -10,7 +10,7 @@ const cwd = process.cwd();
 const cluster = require("cluster");
 const { default: c8 } = require("./c8");
 const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
-const cacheTestPath = resolve(cwd, ".bike.test.config");
+const cacheTestPath = resolve(cwd, ".bike.test.yaml");
 
 function getMsg(msg) {
   if (!/^bike::/.test(msg)) {
@@ -123,7 +123,7 @@ async function bike(config) {
     });
 
     // 若不是测试所有，监听测试配置文件的修改
-    if (!config.testAll) {
+    if (!config.all) {
       if (!fs.existsSync(cacheTestPath)) {
         fs.writeFileSync(cacheTestPath, "");
       }

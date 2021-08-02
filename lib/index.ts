@@ -34,9 +34,14 @@ async function runOne(key: string) {
       console.log(green(`PASS ALL, Done ${doing.length} case.`));
     } else {
       console.log(
-        red(`FAIL, Done ${doing.length - errors.length}/${doing.length} case.`)
+        red(
+          `FAIL: ${errors.length}  |  PASS: ${
+            doing.length - errors.length
+          }  |  ALL: ${doing.length}`
+        )
       );
     }
+    console.log(gray(`Auto retest on change...`));
   }
 }
 
@@ -54,9 +59,9 @@ async function runTest() {
     await Promise.resolve(cache.before());
   }
   const errs = Object.keys(cache.matchIt);
-  console.log(gray("CURRENT TASK:"));
+  console.log(gray(`CURRENT TASK[${errs.length}]:`));
   errs.forEach((key) => {
-    console.log(gray(`-- ${key}`));
+    console.log(gray(`- ${key}`));
   });
   console.log(" ");
 

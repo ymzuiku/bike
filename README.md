@@ -6,7 +6,7 @@ Use cluster auto fork code at file save;
 
 ## Install
 
-```sh
+```bash
 npm install --save-dev bike
 ```
 
@@ -16,6 +16,7 @@ add package.json
 {
   "scripts": {
     "dev": "bike -w",
+    "test": "bike -w --test",
     "build": "bike"
   }
 }
@@ -25,14 +26,20 @@ add package.json
 
 Run Dev Server:
 
-```sh
-yarn dev
+```bash
+npm run dev
 ```
 
 Build release
 
-```sh
-yarn build
+```bash
+npm run build
+```
+
+Run test
+
+```bash
+npm run test
 ```
 
 ## Use CLI Options

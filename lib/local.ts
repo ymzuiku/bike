@@ -1,55 +1,24 @@
 import fs from "fs-extra";
 import { resolve } from "path";
+import yaml from "yaml";
 const cwd = process.cwd();
 const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
-const cacheTestPath = resolve(cwd, ".bike.test.config");
-
-const FOCUS = "------ FOCUS ------";
-const LAST = "------ FAILS ------";
-const ALL = "------  ALL  ------";
+const cacheTestPath = resolve(cwd, ".bike.test.yaml");
 
 function parse() {
-  const file = fs.readFileSync(cacheTestPath).toString();
-  if (file === "") {
-    saveFile([], [], []);
-    return [[], [], []];
-  }
-  const [top, all] = file.split(ALL);
-  const [focus, last] = top.replace(FOCUS, "").split(LAST);
-
-  // 若匹配成功focus，返回focus的itNames
-  const focusNames = focus
-    .split("\n")
-    .map((v) => v.trim())
-    .filter(Boolean);
-
-  // 若匹配成功lastFails，返回fails的itNames
-  const failsNames = last
-    .split("\n")
-    .map((v) => v.trim())
-    .filter(Boolean);
-
-  const allNames = all
-    .split("\n")
-    .map((v) => v.trim())
-    .filter(Boolean);
-
-  return [focusNames, failsNames, allNames];
+  const file2 = fs.readFileSync(cacheTestPath, "utf8");
+  const obj = yaml.parse(file2) || {};
+  return [obj.FOCUS || [], obj.FAILS || [], obj.ALL || []];
 }
 
-function saveFile(focusList: string[], lastList: string[], allList: string[]) {
+function saveFile(focus: string[], fails: string[], all: string[]) {
   fs.writeFileSync(ignoreChangeTestPath, "ignore");
   fs.writeFileSync(
     cacheTestPath,
-    `${FOCUS}
-${focusList.join("\n")}
-
-${LAST}
-${lastList.join("\n")}
-
-${ALL}
-${allList.join("\n")}
-
+    `# Local test result, please add this file in .gitignore
+${focus.length ? yaml.stringify({ FOCUS: focus }) : "FOCUS:\n"}
+${fails.length ? yaml.stringify({ FAILS: fails }) : "FAILS:\n"}
+${all.length ? yaml.stringify({ ALL: all }) : "ALL:\n"}
     `
   );
 }
