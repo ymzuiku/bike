@@ -1,11 +1,12 @@
 const readline = require("readline");
 const cluster = require("cluster");
+const chalk = require("chalk");
 const { resolve } = require("path");
 const fs = require("fs-extra");
 
 const cwd = process.cwd();
 const cacheIgnoreTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
-const cacheTestPath = resolve(cwd, ".bike.test.json");
+const cacheTestPath = resolve(cwd, "node_modules", ".bike.test.json");
 
 function parse() {
   return fs.readJSONSync(cacheTestPath);
@@ -21,15 +22,16 @@ const event = {
   focus: (num) => {
     const { all, doing } = parse();
     if (!doing[num]) {
-      console.log("[bite] No have number 2 in last case");
+      console.log(
+        chalk.gray(
+          `[bite] No have number ${
+            num + 1
+          } in last case, Please press key ${chalk.green("a")} reload all.`
+        )
+      );
+      return;
     }
     saveFile({ focus: [doing[num]], fails: [], all, doing });
-  },
-  // 取消焦距某个测试
-  cancelFocus: () => {
-    const obj = parse();
-    obj.focus = [];
-    saveFile(obj);
   },
   // 全部重新测试
   all: () => {
@@ -68,10 +70,8 @@ const keyboard = (conf) => {
       process.exit();
     } else if (key.name === "a") {
       event.all();
-    } else if (key.name === "f") {
-      event.cancelFocus();
     } else if (nums[key.name]) {
-      event.focus(nums[key.name]);
+      event.focus(nums[key.name] - 1);
     }
   });
 };

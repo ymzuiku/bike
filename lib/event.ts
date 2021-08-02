@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import { resolve } from "path";
 const cwd = process.cwd();
 const cacheIgnoreTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
-const cacheTestPath = resolve(cwd, ".bike.test.json");
+const cacheTestPath = resolve(cwd, "node_modules", ".bike.test.json");
 
 function parse() {
   return fs.readJSONSync(cacheTestPath);

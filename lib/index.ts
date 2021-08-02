@@ -46,9 +46,9 @@ async function runOne(key: string) {
     } else {
       console.log(
         red(
-          `FAIL: ${errors.length}  |  PASS: ${
+          `FAIL: ${errors.length}, PASS: ${
             doing.length - errors.length
-          }  |  ALL: ${doing.length}`
+          }, ALL: ${doing.length}`
         )
       );
     }
@@ -76,10 +76,15 @@ async function runTest() {
     await Promise.resolve(cache.before());
   }
   const errs = Object.keys(cache.matchIt);
-  console.log(gray(`CURRENT TASK[${errs.length}]:`));
-  errs.forEach((key) => {
-    console.log(gray(`- ${key}`));
-  });
+  console.log(
+    gray(
+      `Match case ${errs.length}. Please press key: ${green(
+        "a"
+      )} retest all case, ${green("1~9")} focus number case, ${green(
+        "q"
+      )} quit.`
+    )
+  );
 
   errs.forEach(runOne);
 }
