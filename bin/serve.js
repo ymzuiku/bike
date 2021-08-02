@@ -1,4 +1,4 @@
-const { bike } = require("./index");
+const { bike } = require("./child");
 
 module.exports = (conf) => {
   bike(conf);

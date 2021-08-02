@@ -36,6 +36,11 @@ function getConfig(argv) {
       default: "nodejs",
       description: "Pick in nodejs, browser, aoife",
     })
+    .option("spawn", {
+      type: "boolean",
+      default: false,
+      description: "Use child_process.spawn replace cluster.fork",
+    })
     .option("minify", {
       type: "boolean",
       description: "Esbuild minify",
@@ -146,8 +151,11 @@ function getConfig(argv) {
       description: "(bike-tdd) c8 skip full in text that ignore in html",
     }).argv;
 
+  // 根据conf参数，初始化一些条件和逻辑
+
   if (conf.reporter === "text" || conf.reporter === "html") {
     conf.test = true;
+    conf.spawn = true;
   }
 
   if (!conf.out) {
@@ -197,6 +205,8 @@ function getConfig(argv) {
       conf["jsx-fragment"] = "aoife.Frag";
     }
   }
+
+  conf.argv = argv.slice(2);
 
   if (conf["show-config"]) {
     delete conf["$0"];

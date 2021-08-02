@@ -2,48 +2,25 @@ require("source-map-support").install();
 const esbuild = require("esbuild");
 const { resolve } = require("path");
 const { getExternals } = require("./getExternals");
-const { getCopyFiles } = require("./getCopyFiles");
 const getConfig = require("./getConfig");
+const child = require("./child");
+const { workerFork, workerStart } = require("./worker");
 
 const fs = require("fs-extra");
 const cwd = process.cwd();
-const cluster = require("cluster");
 const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
 const cacheTestPath = resolve(cwd, ".bike.test.yaml");
 
-function getMsg(msg) {
-  if (!/^bike::/.test(msg)) {
-    return;
-  }
-  return msg.replace("bike::", "");
-}
-
 async function bike(config) {
-  if (cluster.isWorker) {
-    process.on("message", (msg) => {
-      msg = getMsg(msg);
-      if (!msg) {
-        return;
-      }
-      const conf = JSON.parse(msg);
-      // 监听Promise没有被捕获的失败函数
-      process.on("unhandledRejection", function (err, promise) {
-        console.error("[bike]", err);
-      });
-      try {
-        require(resolve(process.cwd(), conf.out + "/index.js"));
-      } catch (error) {
-        console.error(error);
-      }
-    });
-
+  if (workerStart(config)) {
     return;
   }
   if (!fs.existsSync(resolve(cwd, config.out))) {
     fs.mkdirSync(resolve(cwd, config.out));
   }
 
-  getCopyFiles(config).forEach((file) => {
+  const copyFiles = new Set([".env", ...(config.copy || [])]);
+  copyFiles.forEach((file) => {
     const p = resolve(cwd, file);
     if (fs.existsSync(p)) {
       fs.copyFileSync(p, resolve(cwd, config.out, file));
@@ -73,6 +50,14 @@ async function bike(config) {
     fs.copySync(publicPath, resolve(cwd, config.out));
   }
 
+  const fork = () => {
+    if (config.spawn) {
+      child(config);
+      return;
+    }
+    workerFork(config);
+  };
+
   const build = async () => {
     if ((config.watch || config.start) && config.clear) {
       console.clear();
@@ -83,17 +68,6 @@ async function bike(config) {
     await esbuild.build({ ...esbuildOptions });
     if (config.after) {
       config.after(config);
-    }
-  };
-
-  const fork = () => {
-    for (const id in cluster.workers) {
-      cluster.workers[id].process.kill();
-    }
-    const worker = cluster.fork();
-    worker.send("bike::" + JSON.stringify(config));
-    if (config.afterFork) {
-      config.afterFork(config, worker);
     }
   };
 

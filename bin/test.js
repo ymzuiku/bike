@@ -2,7 +2,6 @@ const cwd = process.cwd();
 const resolve = require("path").resolve;
 const fs = require("fs-extra");
 const { bike } = require("./index");
-const c8 = require("./c8");
 
 module.exports = (conf) => {
   conf.entry = resolve(conf.out, "index.ts");
@@ -67,15 +66,15 @@ global.bikeReporter = "${conf.reporter || "none"}";
     }
   }
 
-  async function after() {
-    if (conf.reporter) {
-      c8(conf);
-    }
-  }
+  // async function after() {
+  //   if (conf.reporter) {
+  //     c8(conf);
+  //   }
+  // }
 
   if (conf.reporter && !conf.watch) {
     c8({ ...conf, before });
   } else {
-    bike({ ...conf, before, after });
+    bike({ ...conf, before });
   }
 };
