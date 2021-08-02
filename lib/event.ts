@@ -5,7 +5,20 @@ const cacheIgnoreTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
 const cacheTestPath = resolve(cwd, "node_modules", ".bike.test.json");
 
 function parse() {
-  return fs.readJSONSync(cacheTestPath);
+  const obj = fs.readJSONSync(cacheTestPath);
+  if (!obj.focus) {
+    obj.focus = [];
+  }
+  if (!obj.fails) {
+    obj.fails = [];
+  }
+  if (!obj.all) {
+    obj.all = [];
+  }
+  if (!obj.doing) {
+    obj.doing = [];
+  }
+  return obj;
 }
 
 function saveFile(obj: {
