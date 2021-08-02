@@ -1,7 +1,14 @@
 const fs = require("fs-extra");
 const { resolve } = require("path");
 const cwd = process.cwd();
-const { getPkg } = require("./getPkg");
+
+function getPkg() {
+  const pkgPath = resolve(cwd, "package.json");
+  if (fs.existsSync(pkgPath)) {
+    return require(pkgPath) || null;
+  }
+  return null;
+}
 
 function getKeys(obj) {
   const keys = [];
@@ -13,34 +20,56 @@ function getKeys(obj) {
     if (/(link\:)/.test(val)) {
       return;
     }
-    keys.push(val);
+    keys.push(k);
   });
   return keys;
 }
 
 function getExternals(conf) {
   let externals = [
-    // dev
-    "esbuild",
-    // nodejs
-    "wasi",
-    "worker_threads",
-    "v8",
-    "vm",
-    "repl",
-    "fs",
-    "fs/promises",
-    "path",
+    "assert",
+    "async_hooks",
+    "buffer",
+    "child_process",
     "cluster",
+    "console",
+    "crypto",
+    "dgram",
+    "diagnostics_channel",
+    "dns",
+    "domain",
+    "events",
+    "fs",
+    "fs/*",
     "http",
     "http2",
+    "https",
+    "inspector",
+    "module",
     "net",
     "os",
+    "path",
+    "perf_hooks",
     "process",
+    "punycode",
     "querystring",
+    "readline",
+    "repl",
     "stream",
-    "child_process",
-    "crypto",
+    "string_decoder",
+    "tls",
+    "util",
+    "trace_events",
+    "tty",
+    "url",
+    "v8",
+    "vm",
+    "wasi",
+    "stream",
+    "node:stream/*",
+    "node:stream/web",
+    "worker_threads",
+    "zlib",
   ];
 
   const tsconfigPath = resolve(cwd, "tsconfig.json");
@@ -51,7 +80,7 @@ function getExternals(conf) {
   const pkg = getPkg();
 
   if (pkg) {
-    if (conf.watch && !conf.lib && pkg.dependencies) {
+    if (!conf.depend && pkg.dependencies) {
       externals = [...externals, ...getKeys(pkg.dependencies)];
     }
     if (pkg.devDependencies) {

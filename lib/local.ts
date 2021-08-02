@@ -18,8 +18,7 @@ function saveFile(focus: string[], fails: string[], all: string[]) {
     `# Local test result, please add this file in .gitignore
 ${focus.length ? yaml.stringify({ FOCUS: focus }) : "FOCUS:\n"}
 ${fails.length ? yaml.stringify({ FAILS: fails }) : "FAILS:\n"}
-${all.length ? yaml.stringify({ ALL: all }) : "ALL:\n"}
-    `
+${all.length ? yaml.stringify({ ALL: all }) : "ALL:\n"}`
   );
 }
 

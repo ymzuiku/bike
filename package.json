@@ -1,14 +1,10 @@
 {
   "name": "bike",
   "version": "0.3.0",
-  "main": "lib/index.ts",
+  "main": "es/index.ts",
   "types": "lib/index.ts",
   "exports": {
     "import": "./lib/index.ts"
-  },
-  "scripts": {
-    "dev": "node ./lib/index.js example dev",
-    "build": "node ./lib/index.js example build"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.9",

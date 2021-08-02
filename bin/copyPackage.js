@@ -2,17 +2,13 @@ const fs = require("fs-extra");
 const { resolve } = require("path");
 const cwd = process.cwd();
 
-let pkg = void 0;
-
-function getPkg() {
-  if (pkg !== undefined) {
-    return pkg;
-  }
+function copyPackage(conf) {
   const pkgPath = resolve(cwd, "package.json");
   if (fs.existsSync(pkgPath)) {
     pkg = require(pkgPath) || null;
   }
-  return pkg;
+  delete pkg.devDependencies;
+  fs.writeJSONSync(resolve(conf.out, "package.json"), pkg, { spaces: 2 });
 }
 
-module.exports = { getPkg };
+module.exports = { copyPackage };

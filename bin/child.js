@@ -25,7 +25,9 @@ function child(conf) {
   }
   const ls = spawn(
     "npx",
-    [...c8, "node", conf.out + "/index.js", ...conf.argv].filter(Boolean),
+    [...c8, "node", conf.out + "/" + conf.outfile, ...conf.argv].filter(
+      Boolean
+    ),
     {
       stdio: "inherit",
     }

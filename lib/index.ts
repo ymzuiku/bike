@@ -94,16 +94,6 @@ const test = {
   },
 };
 
-setTimeout(() => {
-  // console.log(gray(`Auto watch last fails...`));
-  // console.log(
-  //   gray(
-  //     `Auto watch last fails... Please input ${green("a")}: Run all; ${green(
-  //       "t"
-  //     )}: Text cover; ${green("h")}: Html cover.`
-  //   )
-  // );
-  runTest();
-}, 35);
+setTimeout(runTest, 30);
 
 export { test };

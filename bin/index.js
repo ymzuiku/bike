@@ -4,6 +4,7 @@ const { resolve } = require("path");
 const { getExternals } = require("./getExternals");
 const getConfig = require("./getConfig");
 const child = require("./child");
+const { copyPackage } = require("./copyPackage");
 const { workerFork, workerStart } = require("./worker");
 
 const fs = require("fs-extra");
@@ -11,63 +12,75 @@ const cwd = process.cwd();
 const ignoreChangeTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
 const cacheTestPath = resolve(cwd, ".bike.test.yaml");
 
-async function bike(config) {
-  if (workerStart(config)) {
+async function bike(conf) {
+  if (workerStart(conf)) {
     return;
   }
-  if (!fs.existsSync(resolve(cwd, config.out))) {
-    fs.mkdirSync(resolve(cwd, config.out));
+  if (!fs.existsSync(resolve(cwd, conf.out))) {
+    fs.mkdirSync(resolve(cwd, conf.out));
   }
 
-  const copyFiles = new Set([".env", ...(config.copy || [])]);
+  const copyFiles = new Set([".env", ...(conf.copy || [])]);
   copyFiles.forEach((file) => {
     const p = resolve(cwd, file);
     if (fs.existsSync(p)) {
-      fs.copyFileSync(p, resolve(cwd, config.out, file));
+      fs.copyFileSync(p, resolve(cwd, conf.out, file));
     }
   });
 
+  copyPackage(conf);
+
+  let external = undefined;
+  if (conf.bundle) {
+    if (conf.external) {
+      external = [...getExternals(conf), ...conf.external];
+    } else {
+      external = getExternals(conf);
+    }
+  }
+
   const esbuildOptions = {
-    entryPoints: [resolve(cwd, config.entry)],
-    bundle: true,
-    target: config.target || ["node16", "es6"],
-    minify: config.minify,
-    define: config.define,
-    platform: config.platform,
-    splitting: config.splitting,
-    format: config.format,
-    jsxFactory: config["jsx-factory"],
-    jsxFragment: config["jsx-fragment"],
-    external: config.external
-      ? [...getExternals(config), ...config.external]
-      : getExternals(config),
-    outfile: config.out + "/index.js",
-    sourcemap: config.sourcemap,
+    entryPoints: [resolve(cwd, conf.entry)],
+    bundle: conf.bundle,
+    target: conf.target || ["node16", "es6"],
+    minify: conf.minify,
+    define: conf.define,
+    platform: conf.platform,
+    splitting: conf.splitting,
+    format: conf.format,
+    jsxFactory: conf["jsx-factory"],
+    jsxFragment: conf["jsx-fragment"],
+    external,
+    outdir: conf.splitting ? conf.out : undefined,
+    outfile: conf.splitting ? undefined : conf.out + "/" + conf.outfile,
+    sourcemap: conf.sourcemap,
   };
 
-  const publicPath = resolve(cwd, config.public);
+  console.log(esbuildOptions);
+
+  const publicPath = resolve(cwd, conf.public);
   if (fs.existsSync(publicPath)) {
-    fs.copySync(publicPath, resolve(cwd, config.out));
+    fs.copySync(publicPath, resolve(cwd, conf.out));
   }
 
   const fork = () => {
-    if (config.spawn) {
-      child(config);
+    if (conf.spawn) {
+      child(conf);
       return;
     }
-    workerFork(config);
+    workerFork(conf);
   };
 
   const build = async () => {
-    if ((config.watch || config.start) && config.clear) {
+    if ((conf.watch || conf.start) && conf.clear) {
       console.clear();
     }
-    if (config.before) {
-      await Promise.resolve(config.before(config));
+    if (conf.before) {
+      await Promise.resolve(conf.before(conf));
     }
     await esbuild.build({ ...esbuildOptions });
-    if (config.after) {
-      config.after(config);
+    if (conf.after) {
+      conf.after(conf);
     }
   };
 
@@ -77,12 +90,12 @@ async function bike(config) {
     throw err;
   }
 
-  if (config.start) {
-    require(resolve(cwd, config.out + "/index.js"));
-  } else if (config.watch) {
+  if (conf.start) {
+    require(resolve(cwd, conf.out + "/" + conf.outfile));
+  } else if (conf.watch) {
     fork();
     let lock = false;
-    fs.watch(config.src, { recursive: true }, async (e, f) => {
+    fs.watch(conf.src, { recursive: true }, async (e, f) => {
       if (lock) {
         return;
       }
@@ -95,7 +108,7 @@ async function bike(config) {
     });
 
     // 若不是测试所有，监听测试配置文件的修改
-    if (!config.all) {
+    if (!conf.all) {
       if (!fs.existsSync(cacheTestPath)) {
         fs.writeFileSync(cacheTestPath, "");
       }

@@ -17,6 +17,11 @@ function getConfig(argv) {
       type: "string",
       description: "Build out dir, server default dist, test default dist-test",
     })
+    .option("outfile", {
+      type: "string",
+      default: "index.mjs",
+      description: "Build out dir index name",
+    })
     .option("public", {
       type: "string",
       default: "public",
@@ -26,28 +31,33 @@ function getConfig(argv) {
       type: "string",
       description: "Main typescript file, default: ${src}/index.ts",
     })
-    .option("lib", {
-      type: "boolean",
-      default: false,
-      description: "If lib is true, not compiler dependencies",
-    })
     .option("base", {
       type: "string",
       default: "nodejs",
-      description: "Pick in nodejs, browser, aoife",
+      description: "Pick in [nodejs, browser, aoife]",
     })
     .option("spawn", {
       type: "boolean",
       default: false,
       description: "Use child_process.spawn replace cluster.fork",
     })
+    .option("copy", {
+      type: "array",
+      description: "Copy other file to dist",
+    })
     .option("minify", {
       type: "boolean",
       description: "Esbuild minify",
     })
-    .option("copy", {
-      type: "array",
-      description: "copy file to dist",
+    .option("bundle", {
+      type: "boolean",
+      default: true,
+      description: "Esbuild bundle",
+    })
+    .option("depend", {
+      type: "boolean",
+      default: false,
+      description: "Esbuild bundle dependencies",
     })
     .option("external", {
       alias: "e",
@@ -65,11 +75,11 @@ function getConfig(argv) {
     })
     .option("splitting", {
       type: "boolean",
-      default: false,
       description: "Esbuild splitting",
     })
     .option("format", {
       type: "string",
+      default: "esm",
       description: "Esbuild format",
     })
     .option("sourcemap", {
@@ -152,6 +162,7 @@ function getConfig(argv) {
     }).argv;
 
   // 根据conf参数，初始化一些条件和逻辑
+  conf.argv = argv.slice(2);
 
   if (conf.reporter === "text" || conf.reporter === "html") {
     conf.test = true;
@@ -182,6 +193,9 @@ function getConfig(argv) {
 
   const brower = () => {
     if (!conf.watch && !conf.start) {
+      if (conf.depend === undefined) {
+        conf.depend = true;
+      }
       if (conf.minify === undefined) {
         conf.minify = true;
       }
@@ -205,8 +219,6 @@ function getConfig(argv) {
       conf["jsx-fragment"] = "aoife.Frag";
     }
   }
-
-  conf.argv = argv.slice(2);
 
   if (conf["show-config"]) {
     delete conf["$0"];

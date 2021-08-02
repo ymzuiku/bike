@@ -32,7 +32,11 @@ const workerStart = () => {
         console.error("[bike]", err);
       });
       try {
-        require(resolve(process.cwd(), conf.out + "/index.js"));
+        if (/\.mjs/.test(conf.outfile)) {
+          import(resolve(process.cwd(), conf.out + "/" + conf.outfile));
+        } else {
+          require(resolve(process.cwd(), conf.out + "/" + conf.outfile));
+        }
       } catch (error) {
         console.error(error);
       }
