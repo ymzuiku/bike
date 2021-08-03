@@ -27,5 +27,5 @@
     "types": ["jest"]
   },
   "exclude": [".vscode", ".git", "node_modules", "umd", "dist"],
-  "include": ["jest", "bin", "server"]
+  "include": ["src", "lib"]
 }
