@@ -1,5 +1,7 @@
-const fs = require("fs-extra");
-const { resolve } = require("path");
+import fs from "fs-extra";
+import { resolve } from "path";
+import type { Conf } from "./getConfig";
+
 const cwd = process.cwd();
 
 function getPkg() {
@@ -10,11 +12,11 @@ function getPkg() {
   return null;
 }
 
-function getKeys(obj) {
+function getKeys(obj: { [key: string]: string }) {
   if (!obj) {
     return [];
   }
-  const keys = [];
+  const keys: string[] = [];
   Object.keys(obj).forEach((k) => {
     const val = obj[k];
     if (/(\.).*(\/)/.test(val)) {
@@ -28,7 +30,7 @@ function getKeys(obj) {
   return keys;
 }
 
-function getExternals(conf) {
+export function getExternals(conf: Conf) {
   let externals = [
     "assert",
     "async_hooks",
@@ -105,5 +107,3 @@ function getExternals(conf) {
   }
   return Array.from(new Set(externals));
 }
-
-module.exports = { getExternals };

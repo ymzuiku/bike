@@ -1,8 +1,12 @@
-const yargs = require("yargs/yargs");
-const { hideBin } = require("yargs/helpers");
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
-function getConfig(argv) {
-  const conf = yargs(hideBin(argv))
+export function getConfig(argv: string[]) {
+  const confObj = yargs(hideBin(argv))
+    .option("argv", {
+      type: "array",
+      description: "Backup all argv",
+    })
     .option("show-config", {
       type: "boolean",
       default: false,
@@ -143,26 +147,24 @@ function getConfig(argv) {
     })
     .option("c8-include", {
       alias: "n",
-      type: "boolean",
-      default: false,
+      type: "array",
       description: "(only-test) c8 include all files",
     })
     .option("c8-exclude", {
       alias: "x",
-      type: "boolean",
-      default: false,
+      type: "array",
       description: "(only-test) c8 exclude all files",
     })
     .option("c8-config", {
       type: "string",
-      default: "",
       description: "(only-test) c8 path to JSON configuration file",
     })
     .option("c8-skip-full", {
       type: "boolean",
       description: "(only-test) c8 skip full in text that ignore in html",
-    }).argv;
+    });
 
+  const conf = confObj.parseSync();
   // 根据conf参数，初始化一些条件和逻辑
   conf.argv = argv.slice(2);
 
@@ -223,8 +225,8 @@ function getConfig(argv) {
   }
 
   if (conf["show-config"]) {
-    delete conf["$0"];
-    delete conf["_"];
+    delete (conf as any)["$0"];
+    delete (conf as any)["_"];
     Object.keys(conf).forEach((k) => {
       if (/-/.test(k) || k.length === 1) {
         delete conf[k];
@@ -239,4 +241,10 @@ function getConfig(argv) {
   return conf;
 }
 
-module.exports = { getConfig };
+const _conf = getConfig([]);
+
+export type Conf = typeof _conf & {
+  afterFork: Function;
+  after: Function;
+  before: Function;
+};

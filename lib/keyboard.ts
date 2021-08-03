@@ -1,25 +1,37 @@
-const readline = require("readline");
-const cluster = require("cluster");
-const chalk = require("chalk");
-const { resolve } = require("path");
-const fs = require("fs-extra");
+import readline from "readline";
+import cluster from "cluster";
+import chalk from "chalk";
+import { resolve } from "path";
+import type { Conf } from "./getConfig";
+import fs from "fs-extra";
 
 const cwd = process.cwd();
-const cacheIgnoreTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
-const cacheTestPath = resolve(cwd, "node_modules", ".bike.test.json");
+
+export const cacheIgnoreTestPath = resolve(
+  cwd,
+  "node_modules",
+  ".bike.test.ignore"
+);
+export const cacheTestPath = resolve(cwd, "node_modules", ".bike.test.json");
 
 function parse() {
   return fs.readJSONSync(cacheTestPath);
 }
 
-function saveFile(obj) {
-  // fs.writeFileSync(cacheIgnoreTestPath, "ignore");
+export interface Cache {
+  focus: string[];
+  fails: string[];
+  all: string[];
+  doing: string[];
+}
+
+function saveFile(obj: Cache) {
   fs.writeJSONSync(cacheTestPath, obj, { spaces: 2 });
 }
 
-const event = {
+export const event = {
   // 焦距某一个测试
-  focus: (num) => {
+  focus: (num: number) => {
     const { all, doing } = parse();
     if (!doing[num]) {
       console.log(
@@ -42,20 +54,20 @@ const event = {
   },
 };
 
-const nums = {
-  1: 1,
-  2: 2,
-  3: 3,
-  4: 4,
-  5: 5,
-  6: 6,
-  7: 7,
-  8: 8,
-  9: 9,
-  0: 10,
+const nums: { [key: string]: number } = {
+  "1": 1,
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
+  "8": 8,
+  "9": 9,
+  "0": 10,
 };
 
-const keyboard = (conf) => {
+export const keyboard = (conf: Conf) => {
   if (cluster.isWorker) {
     return;
   }
@@ -75,5 +87,3 @@ const keyboard = (conf) => {
     }
   });
 };
-
-module.exports = { keyboard, cacheIgnoreTestPath, cacheTestPath };

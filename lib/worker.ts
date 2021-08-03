@@ -1,25 +1,26 @@
-const cluster = require("cluster");
-const { resolve } = require("path");
+import cluster from "cluster";
+import { resolve } from "path";
+import type { Conf } from "./getConfig";
 
-function getMsg(msg) {
+function getMsg(msg: string) {
   if (!/^bike::/.test(msg)) {
     return;
   }
   return msg.replace("bike::", "");
 }
 
-const workerFork = (config) => {
+export const workerFork = (conf: Conf) => {
   for (const id in cluster.workers) {
-    cluster.workers[id].process.kill();
+    (cluster as any).workers[id].process.kill();
   }
   const worker = cluster.fork();
-  worker.send("bike::" + JSON.stringify(config));
-  if (config.afterFork) {
-    config.afterFork(config, worker);
+  worker.send("bike::" + JSON.stringify(conf));
+  if (conf.afterFork) {
+    conf.afterFork(conf, worker);
   }
 };
 
-const workerStart = () => {
+export const workerStart = () => {
   if (cluster.isWorker) {
     process.on("message", (msg) => {
       msg = getMsg(msg);
@@ -43,9 +44,4 @@ const workerStart = () => {
     });
   }
   return cluster.isWorker;
-};
-
-module.exports = {
-  workerFork,
-  workerStart,
 };

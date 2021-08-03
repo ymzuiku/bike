@@ -1,19 +1,21 @@
-const cwd = process.cwd();
-const resolve = require("path").resolve;
-const fs = require("fs-extra");
-const { bike } = require("./index");
+import { resolve } from "path";
+import fs from "fs-extra";
+import { bike } from "./bike";
+import type { Conf } from "./getConfig";
 
-const test = (conf) => {
-  conf.entry = resolve(conf.out, "index.ts");
+const cwd = process.cwd();
+
+export const test = (conf: Conf) => {
+  conf.entry = resolve(conf.out!, "index.ts");
   if (!conf.watch) {
     conf.start = true;
   }
 
-  const files = [];
+  const files: string[] = [];
   let waitGroup = 0;
   const reg = new RegExp(conf.match);
 
-  function findTests(dir) {
+  function findTests(dir: string) {
     waitGroup += 1;
     fs.readdir(dir).then((list) => {
       list.forEach((file) => {
@@ -32,8 +34,8 @@ const test = (conf) => {
     });
   }
 
-  if (!fs.existsSync(conf.out)) {
-    fs.mkdirpSync(conf.out);
+  if (!fs.existsSync(conf.out!)) {
+    fs.mkdirpSync(conf.out!);
   }
 
   async function createCode() {
@@ -42,13 +44,13 @@ const test = (conf) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {
           clearInterval(stop);
-          res();
+          res(void 0);
         }
-      });
-    }, 20);
+      }, 20);
+    });
     const code = files.map((file) => `import "${file}";`).join("\n");
     await fs.writeFile(
-      conf.entry,
+      conf.entry!,
       `${code}
 
 global.bikeTestAll = ${conf.all};
@@ -68,5 +70,3 @@ global.bikeReporter = "${conf.reporter || "none"}";
 
   bike({ ...conf, before });
 };
-
-module.exports = { test };

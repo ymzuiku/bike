@@ -1,35 +1,52 @@
-require("source-map-support").install();
-const esbuild = require("esbuild");
-const { resolve } = require("path");
-const { getExternals } = require("./getExternals");
-const { child } = require("./child");
-const { copyPackage } = require("./copyPackage");
-const { workerFork, workerStart } = require("./worker");
-const { keyboard, cacheTestPath, cacheIgnoreTestPath } = require("./keyboard");
+// require("source-map-support").install();
+import sourceMapSupport from "source-map-support";
+import esbuild from "esbuild";
+import { resolve } from "path";
+import { getExternals } from "./getExternals";
+import type { Conf } from "./getConfig";
+import { child } from "./child";
+import { copyPackage } from "./copyPackage";
+import { workerFork, workerStart } from "./worker";
+import { keyboard, cacheTestPath, cacheIgnoreTestPath } from "./keyboard";
+
+sourceMapSupport.install();
 
 const fs = require("fs-extra");
 const cwd = process.cwd();
 
-async function bike(conf) {
-  if (workerStart(conf)) {
+export async function bike(conf: Conf) {
+  if (workerStart()) {
     return;
   }
   if (conf.test && conf.watch) {
     keyboard(conf);
   }
-  if (!fs.existsSync(resolve(cwd, conf.out))) {
-    fs.mkdirSync(resolve(cwd, conf.out));
+  if (!fs.existsSync(resolve(cwd, conf.out!))) {
+    fs.mkdirSync(resolve(cwd, conf.out!));
   }
 
-  const copyFiles = new Set([".env", ...(conf.copy || [])]);
+  const copyFiles = new Set([".env", ...((conf.copy as string[]) || [])]);
   copyFiles.forEach((file) => {
     const p = resolve(cwd, file);
     if (fs.existsSync(p)) {
-      fs.copyFileSync(p, resolve(cwd, conf.out, file));
+      fs.copyFileSync(p, resolve(cwd, conf.out!, file));
     }
   });
 
   copyPackage(conf);
+
+  const publicPath = resolve(cwd, conf.public);
+  if (fs.existsSync(publicPath)) {
+    fs.copySync(publicPath, resolve(cwd, conf.out!));
+  }
+
+  const fork = () => {
+    if (conf.spawn) {
+      child(conf);
+      return;
+    }
+    workerFork(conf);
+  };
 
   let external = undefined;
   if (conf.bundle) {
@@ -40,8 +57,8 @@ async function bike(conf) {
     }
   }
 
-  const esbuildOptions = {
-    entryPoints: [resolve(cwd, conf.entry)],
+  const esbuildOptions: any = {
+    entryPoints: [resolve(cwd, conf.entry!)],
     bundle: conf.bundle,
     target: conf.target || ["node16", "es6"],
     minify: conf.minify,
@@ -57,19 +74,6 @@ async function bike(conf) {
     sourcemap: conf.sourcemap,
   };
 
-  const publicPath = resolve(cwd, conf.public);
-  if (fs.existsSync(publicPath)) {
-    fs.copySync(publicPath, resolve(cwd, conf.out));
-  }
-
-  const fork = () => {
-    if (conf.spawn) {
-      child(conf);
-      return;
-    }
-    workerFork(conf);
-  };
-
   const build = async () => {
     if ((conf.watch || conf.start) && conf.clear) {
       console.clear();
@@ -77,7 +81,7 @@ async function bike(conf) {
     if (conf.before) {
       await Promise.resolve(conf.before(conf));
     }
-    await esbuild.build({ ...esbuildOptions });
+    await esbuild.build(esbuildOptions);
     if (conf.after) {
       conf.after(conf);
     }
@@ -95,7 +99,7 @@ async function bike(conf) {
   } else if (conf.watch) {
     fork();
     let lock = false;
-    fs.watch(conf.src, { recursive: true }, async (e, f) => {
+    fs.watch(conf.src, { recursive: true }, async () => {
       if (lock) {
         return;
       }
@@ -112,7 +116,7 @@ async function bike(conf) {
       if (!fs.existsSync(cacheTestPath)) {
         fs.writeFileSync(cacheTestPath, "{}");
       }
-      fs.watch(cacheTestPath, async (e, f) => {
+      fs.watch(cacheTestPath, async () => {
         if (fs.existsSync(cacheIgnoreTestPath)) {
           fs.rmSync(cacheIgnoreTestPath);
           return;
@@ -130,7 +134,3 @@ async function bike(conf) {
     }
   }
 }
-
-module.exports = {
-  bike,
-};
