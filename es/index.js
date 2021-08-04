@@ -33,8 +33,6 @@ var import_source_map_support = __toModule(require("source-map-support"));
 // lib/getConfig.ts
 var import_yargs = __toModule(require("yargs"));
 var import_helpers = __toModule(require("yargs/helpers"));
-var import_fs_extra = __toModule(require("fs-extra"));
-var import_path = __toModule(require("path"));
 function getConfig(argv) {
   const confObj = (0, import_yargs.default)((0, import_helpers.hideBin)(argv)).option("argv", {
     type: "array",
@@ -191,68 +189,6 @@ function getConfig(argv) {
   });
   const conf = confObj.parseSync();
   conf.argv = argv.slice(2);
-  if (conf.gzip === void 0) {
-    if (conf.watch || conf.start) {
-      conf.gzip = false;
-    } else {
-      conf.gzip = true;
-    }
-  }
-  if (conf.reporter === "text" || conf.reporter === "html") {
-    conf.test = true;
-    conf.spawn = true;
-  }
-  if (!conf.out) {
-    if (conf.test) {
-      conf.out = "dist-test";
-    } else {
-      conf.out = "dist";
-    }
-  }
-  if (conf.reporter === "text" && conf["c8-skip-full"] == void 0) {
-    conf["c8-skip-full"] = true;
-  }
-  if (!conf.entry) {
-    conf.entry = conf.src + "/index.ts";
-  }
-  if (conf.sourcemap === void 0) {
-    if (conf.watch || conf.start || conf.reporter) {
-      conf.sourcemap = true;
-    }
-  }
-  const brower = () => {
-    conf.platform = "neutral";
-    if (!conf.watch && !conf.start) {
-      if (conf.depend === void 0) {
-        conf.depend = true;
-      }
-      if (conf.minify === void 0) {
-        conf.minify = true;
-      }
-    }
-    if (conf.format === void 0) {
-      conf.format = "esm";
-    }
-    if (conf.splitting === void 0) {
-      conf.splitting = true;
-    }
-  };
-  if (conf.browser) {
-    const htmlPath = (0, import_path.resolve)(process.cwd(), "index.html");
-    const html = import_fs_extra.default.readFileSync(htmlPath, "utf8");
-    const match = html.match(/src="(.*?).(ts|tsx)"/);
-    if (match && match[0]) {
-      const subMatch = match[0].match(/src="(.*?)"/);
-      if (subMatch && subMatch[1]) {
-        const url = subMatch[1];
-        const [src, entry] = url.split("/").filter(Boolean);
-        conf.src = src;
-        conf.entry = src + "/" + entry;
-      }
-    }
-    conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
-    brower();
-  }
   if (conf["show-config"]) {
     delete conf["$0"];
     delete conf["_"];
@@ -275,12 +211,12 @@ var import_esbuild = __toModule(require("esbuild"));
 var import_path7 = __toModule(require("path"));
 
 // lib/getExternals.ts
-var import_fs_extra2 = __toModule(require("fs-extra"));
-var import_path2 = __toModule(require("path"));
+var import_fs_extra = __toModule(require("fs-extra"));
+var import_path = __toModule(require("path"));
 var cwd = process.cwd();
 function getPkg() {
-  const pkgPath = (0, import_path2.resolve)(cwd, "package.json");
-  if (import_fs_extra2.default.existsSync(pkgPath)) {
+  const pkgPath = (0, import_path.resolve)(cwd, "package.json");
+  if (import_fs_extra.default.existsSync(pkgPath)) {
     return require(pkgPath) || null;
   }
   return null;
@@ -348,8 +284,8 @@ function getExternals(conf) {
     "worker_threads",
     "zlib"
   ];
-  const tsconfigPath = (0, import_path2.resolve)(cwd, "tsconfig.json");
-  const selfPkg = require((0, import_path2.resolve)(__dirname, "../package.json"));
+  const tsconfigPath = (0, import_path.resolve)(cwd, "tsconfig.json");
+  const selfPkg = require((0, import_path.resolve)(__dirname, "../package.json"));
   externals = [...externals, ...getKeys(selfPkg.dependencies)];
   externals = [...externals, ...getKeys(selfPkg.devDependencies)];
   const pkg = getPkg();
@@ -366,7 +302,7 @@ function getExternals(conf) {
       externals = [...externals, ...getKeys(pkg.devDependencies)];
     }
   }
-  if (import_fs_extra2.default.existsSync(tsconfigPath)) {
+  if (import_fs_extra.default.existsSync(tsconfigPath)) {
     const tsconfig = require(tsconfigPath);
     if (tsconfig.exclude) {
       externals = [...externals, ...tsconfig.exclude];
@@ -429,22 +365,22 @@ function spawn(conf) {
 }
 
 // lib/copyPackage.ts
-var import_fs_extra3 = __toModule(require("fs-extra"));
-var import_path3 = __toModule(require("path"));
+var import_fs_extra2 = __toModule(require("fs-extra"));
+var import_path2 = __toModule(require("path"));
 var cwd2 = process.cwd();
 function copyPackage(conf) {
-  const pkgPath = (0, import_path3.resolve)(cwd2, "package.json");
-  if (!import_fs_extra3.default.existsSync(pkgPath)) {
+  const pkgPath = (0, import_path2.resolve)(cwd2, "package.json");
+  if (!import_fs_extra2.default.existsSync(pkgPath)) {
     return;
   }
   const pkg = require(pkgPath) || null;
   delete pkg.devDependencies;
-  import_fs_extra3.default.writeJSONSync((0, import_path3.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
+  import_fs_extra2.default.writeJSONSync((0, import_path2.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
 }
 
 // lib/worker.ts
 var import_cluster = __toModule(require("cluster"));
-var import_path4 = __toModule(require("path"));
+var import_path3 = __toModule(require("path"));
 function getMsg(msg) {
   if (!/^bike::/.test(msg)) {
     return;
@@ -474,9 +410,9 @@ var workerStart = () => {
       });
       try {
         if (/\.mjs/.test(conf.outfile)) {
-          import((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
+          import((0, import_path3.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
         } else {
-          require((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
+          require((0, import_path3.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
         }
       } catch (error) {
         console.error(error);
@@ -490,16 +426,16 @@ var workerStart = () => {
 var import_readline = __toModule(require("readline"));
 var import_cluster2 = __toModule(require("cluster"));
 var import_chalk = __toModule(require("chalk"));
-var import_path5 = __toModule(require("path"));
-var import_fs_extra4 = __toModule(require("fs-extra"));
+var import_path4 = __toModule(require("path"));
+var import_fs_extra3 = __toModule(require("fs-extra"));
 var cwd3 = process.cwd();
-var cacheIgnoreTestPath = (0, import_path5.resolve)(cwd3, "node_modules", ".bike.test.ignore");
-var cacheTestPath = (0, import_path5.resolve)(cwd3, "node_modules", ".bike.test.json");
+var cacheIgnoreTestPath = (0, import_path4.resolve)(cwd3, "node_modules", ".bike.test.ignore");
+var cacheTestPath = (0, import_path4.resolve)(cwd3, "node_modules", ".bike.test.json");
 function parse() {
-  return import_fs_extra4.default.readJSONSync(cacheTestPath);
+  return import_fs_extra3.default.readJSONSync(cacheTestPath);
 }
 function saveFile(obj) {
-  import_fs_extra4.default.writeJSONSync(cacheTestPath, obj, { spaces: 2 });
+  import_fs_extra3.default.writeJSONSync(cacheTestPath, obj, { spaces: 2 });
 }
 var event = {
   focus: (num) => {
@@ -553,8 +489,8 @@ var keyboard = (conf) => {
 // lib/serve.ts
 var import_fastify = __toModule(require("fastify"));
 var import_fastify_websocket = __toModule(require("fastify-websocket"));
-var import_fs_extra5 = __toModule(require("fs-extra"));
-var import_path6 = __toModule(require("path"));
+var import_fs_extra4 = __toModule(require("fs-extra"));
+var import_path5 = __toModule(require("path"));
 var import_fastify_http_proxy = __toModule(require("fastify-http-proxy"));
 var import_fastify_static = __toModule(require("fastify-static"));
 var import_fastify_compress = __toModule(require("fastify-compress"));
@@ -565,7 +501,7 @@ var serve = (conf) => {
   if (!conf.watch) {
     return;
   }
-  const htmlPath = (0, import_path6.resolve)(conf.out, "index.html");
+  const htmlPath = (0, import_path5.resolve)(conf.out, "index.html");
   const { gzip, host, port, proxy } = conf;
   const publicPrefix = conf["path-prefix"];
   const app = (0, import_fastify.fastify)();
@@ -585,12 +521,12 @@ var serve = (conf) => {
     app.register(import_fastify_compress.default, { global: true });
   }
   app.register(import_fastify_static.default, {
-    root: (0, import_path6.resolve)(cwd4, conf.out),
+    root: (0, import_path5.resolve)(cwd4, conf.out),
     prefix: publicPrefix
   });
   app.register(import_fastify_websocket.default);
   app.get("/", function(req, rep) {
-    var html = import_fs_extra5.default.readFileSync(htmlPath, "utf8");
+    var html = import_fs_extra4.default.readFileSync(htmlPath, "utf8");
     html = html.replace("</html>", "");
     html += `<script>${devHot}<\/script></html>`;
     rep.code(200).header("Content-Type", "text/html; charset=utf-8").send(html);
@@ -607,11 +543,11 @@ var serve = (conf) => {
   });
 };
 var releaseBrowser = (conf) => {
-  const indexJS = import_fs_extra5.default.readFileSync((0, import_path6.resolve)(conf.out, "index.js"));
+  const indexJS = import_fs_extra4.default.readFileSync((0, import_path5.resolve)(conf.out, "index.js"));
   const key = (0, import_crypto.createHmac)("sha256", "bike").update(indexJS).digest("hex").slice(5, 13);
-  import_fs_extra5.default.renameSync((0, import_path6.resolve)(conf.out, "index.js"), (0, import_path6.resolve)(conf.out, `index-${key}.js`));
+  import_fs_extra4.default.renameSync((0, import_path5.resolve)(conf.out, "index.js"), (0, import_path5.resolve)(conf.out, `index-${key}.js`));
   const _html = conf["html-text"].replace("/index.js?bike=1", `"/index-${key}.js"`);
-  import_fs_extra5.default.writeFileSync((0, import_path6.resolve)(conf.out, "index.html"), _html);
+  import_fs_extra4.default.writeFileSync((0, import_path5.resolve)(conf.out, "index.html"), _html);
 };
 var keep = null;
 var onBuilded = (conf) => {
@@ -676,8 +612,80 @@ var devHot = `(function () {
 
 // lib/bike.ts
 var import_fs_extra6 = __toModule(require("fs-extra"));
+
+// lib/baseConfig.ts
+var import_fs_extra5 = __toModule(require("fs-extra"));
+var import_path6 = __toModule(require("path"));
+var baseConfig = (conf) => {
+  if (conf.gzip === void 0) {
+    if (conf.watch || conf.start) {
+      conf.gzip = false;
+    } else {
+      conf.gzip = true;
+    }
+  }
+  if (conf.reporter === "text" || conf.reporter === "html") {
+    conf.test = true;
+    conf.spawn = true;
+  }
+  if (!conf.out) {
+    if (conf.test) {
+      conf.out = "dist-test";
+    } else {
+      conf.out = "dist";
+    }
+  }
+  if (conf.reporter === "text" && conf["c8-skip-full"] == void 0) {
+    conf["c8-skip-full"] = true;
+  }
+  if (!conf.entry) {
+    conf.entry = conf.src + "/index.ts";
+  }
+  if (conf.sourcemap === void 0) {
+    if (conf.watch || conf.start || conf.reporter) {
+      conf.sourcemap = true;
+    }
+  }
+  const brower = () => {
+    conf.platform = "neutral";
+    if (!conf.watch && !conf.start) {
+      if (conf.depend === void 0) {
+        conf.depend = true;
+      }
+      if (conf.minify === void 0) {
+        conf.minify = true;
+      }
+    }
+    if (conf.format === void 0) {
+      conf.format = "esm";
+    }
+    if (conf.splitting === void 0) {
+      conf.splitting = true;
+    }
+  };
+  if (conf.browser) {
+    const htmlPath = (0, import_path6.resolve)(process.cwd(), "index.html");
+    const html = import_fs_extra5.default.readFileSync(htmlPath, "utf8");
+    const match = html.match(/src="(.*?).(ts|tsx)"/);
+    if (match && match[0]) {
+      const subMatch = match[0].match(/src="(.*?)"/);
+      if (subMatch && subMatch[1]) {
+        const url = subMatch[1];
+        const [src, entry] = url.split("/").filter(Boolean);
+        conf.src = src;
+        conf.entry = src + "/" + entry;
+      }
+    }
+    conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
+    brower();
+  }
+  return conf;
+};
+
+// lib/bike.ts
 var cwd5 = process.cwd();
-async function bike(conf) {
+async function bike(config) {
+  const conf = baseConfig(config);
   if (workerStart()) {
     return;
   }
@@ -805,8 +813,9 @@ async function bike(conf) {
 var import_path8 = __toModule(require("path"));
 var import_fs_extra7 = __toModule(require("fs-extra"));
 var cwd6 = process.cwd();
-var test = (conf) => {
-  conf.entry = (0, import_path8.resolve)(conf.out, "index.ts");
+var test = (config) => {
+  const conf = baseConfig(config);
+  conf.entry = (0, import_path8.resolve)(conf.out, "__bike__.ts");
   if (!conf.watch) {
     conf.start = true;
   }
@@ -851,6 +860,8 @@ const win = new JSDOM("", { pretendToBeVisual: true }).window;
 global.window = win;
 global.document = win.document;
 global.fetch = require("node-fetch");
+import { test } from "bike/test";
+global.test = test;
 ${code}
 `);
   }

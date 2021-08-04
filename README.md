@@ -20,6 +20,7 @@ mkdir your-project
 cd your-project
 mkdir src
 touch src/index.ts
+touch src/index_test.ts
 
 # Install bike
 npm install --save-dev bike
@@ -29,6 +30,16 @@ Add some code in src/index.ts
 
 ```ts
 console.log("Hello bike");
+```
+
+Add some test code in src/index_test.ts
+
+```ts
+import { test } from "bike/test";
+
+test.it("index test", (so) => {
+  so.deepEqual(21, 23);
+});
 ```
 
 ### Run and test

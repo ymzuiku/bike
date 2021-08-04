@@ -2,11 +2,13 @@ import { resolve } from "path";
 import fs from "fs-extra";
 import { bike } from "./bike";
 import type { Conf } from "./getConfig";
+import { baseConfig } from "./baseConfig";
 
 const cwd = process.cwd();
 
-export const test = (conf: Conf) => {
-  conf.entry = resolve(conf.out!, "index.ts");
+export const test = (config: Partial<Conf>) => {
+  const conf = baseConfig(config);
+  conf.entry = resolve(conf.out!, "__bike__.ts");
   if (!conf.watch) {
     conf.start = true;
   }
@@ -59,6 +61,8 @@ const win = new JSDOM("", { pretendToBeVisual: true }).window;
 global.window = win;
 global.document = win.document;
 global.fetch = require("node-fetch");
+import { test } from "bike/test";
+global.test = test;
 ${code}
 `
     );

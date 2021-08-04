@@ -3,11 +3,10 @@ import { cache } from "./cache";
 import { gray, green, logPass, red, greenBold, title } from "./log";
 import { event } from "./event";
 import { resolve } from "path";
-// import { JSDOM } from "jsdom";
 import type { Conf } from "../lib/getConfig";
 
 require("source-map-support").install();
-const conf = (global as any).bikeConf as Conf;
+const conf = () => (global as any).bikeConf as Conf;
 
 let num = 0;
 
@@ -39,7 +38,7 @@ async function runOne(key: string) {
     const errors = Object.keys(cache.errors);
     const all = Object.keys(cache.it);
     // 若是测试所有，不进行 test.config 调整
-    if (conf.all) {
+    if (conf().all) {
       event.save(doing, errors, all);
     }
     if (errors.length === 0) {
@@ -54,7 +53,7 @@ async function runOne(key: string) {
       );
     }
     // console.log(gray(`Auto retest on change...`));
-    if (conf.reporter === "html") {
+    if (conf().reporter === "html") {
       console.log(
         `Coverage html at: ${resolve(process.cwd(), "coverage")}/index.html`
       );
@@ -65,7 +64,7 @@ async function runOne(key: string) {
 
 async function runTest() {
   // 读取需要测试的对象
-  const task = conf.all
+  const task = conf().all
     ? Object.keys(cache.it)
     : event.load(Object.keys(cache.it));
 
@@ -77,7 +76,7 @@ async function runTest() {
     await Promise.resolve(cache.before());
   }
   const errs = Object.keys(cache.matchIt);
-  if (conf.watch) {
+  if (conf().watch) {
     console.log(
       gray(
         `Match case ${errs.length}. Please press key: ${greenBold(
@@ -93,9 +92,6 @@ async function runTest() {
 }
 
 const test = {
-  // render: (ele: Element) => {
-  //   return new JSDOM();
-  // },
   each: (fn: (key: string, testing: Function) => any) => {
     if (cache.each) {
       throw new Error("[bike] test.each can only be set once");

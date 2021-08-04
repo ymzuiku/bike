@@ -8,10 +8,12 @@ import { workerFork, workerStart } from "./worker";
 import { keyboard, cacheTestPath, cacheIgnoreTestPath } from "./keyboard";
 import { serve, onBuilded, releaseBrowser } from "./serve";
 import fs from "fs-extra";
+import { baseConfig } from "./baseConfig";
 
 const cwd = process.cwd();
 
-export async function bike(conf: Conf) {
+export async function bike(config: Partial<Conf>) {
+  const conf = baseConfig(config);
   if (workerStart()) {
     return;
   }

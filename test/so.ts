@@ -71,18 +71,18 @@ export function createSo(name: string) {
         logFail(name, cache.errors[name].stack!);
       }
     },
-    error: (err: Error, other: Error) => {
+    error: (err?: Error | null, other?: Error | null) => {
       if ((!err && other) || (!other && err) || (!err && !other)) {
         cache.errors[name] = new Error(`${err} isn't ${other}`);
         logFail(name, cache.errors[name].stack!);
         return;
       }
 
-      if (err.message === other.message) {
+      if (err!.message === other!.message) {
         return;
       }
 
-      if (err.message.indexOf(other.message) > -1) {
+      if (err!.message.indexOf(other!.message) > -1) {
         cache.errors[name] = new Error(`error ${err} isn't ${other}`);
         logFail(name, cache.errors[name].stack!);
       }
