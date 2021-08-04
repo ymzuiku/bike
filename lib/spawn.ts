@@ -1,9 +1,9 @@
-import { spawn } from "child_process";
+import child_process from "child_process";
 import type { Conf } from "./getConfig";
 
 let lastChild: any = null;
 
-export function child(conf: Conf) {
+export function spawn(conf: Conf) {
   if (lastChild) {
     lastChild.kill(0);
     lastChild = null;
@@ -18,10 +18,17 @@ export function child(conf: Conf) {
     });
   }
 
-  const c8Exclude: string[] = ["./coverage", "./node_modules", ".vscode"];
+  const c8Exclude: string[] = [
+    "--exclude",
+    "./coverage",
+    "--exclude",
+    "./node_modules",
+    "--exclude",
+    ".vscode",
+  ];
   if (conf["c8-exclude"]?.length) {
     conf["c8-exclude"].forEach((k) => {
-      c8Exclude.push("--include");
+      c8Exclude.push("--exclude");
       c8Exclude.push(k as string);
     });
   }
@@ -37,7 +44,7 @@ export function child(conf: Conf) {
     ];
   }
 
-  const ls = spawn(
+  const ls = child_process.spawn(
     "npx",
     [
       ...c8,

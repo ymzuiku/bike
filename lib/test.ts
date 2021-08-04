@@ -48,13 +48,18 @@ export const test = (conf: Conf) => {
         }
       }, 20);
     });
-    const code = files.map((file) => `import "${file}";`).join("\n");
+    const code = files
+      .map((file) => `import("${file.replace(/\.(ts|tsx|js|jsx)/, "")}");`)
+      .join("\n");
     await fs.writeFile(
       conf.entry!,
-      `${code}
-
-global.bikeTestAll = ${conf.all};
-global.bikeReporter = "${conf.reporter || "none"}";
+      `global.bikeConf = ${JSON.stringify(conf)};
+const { JSDOM } = require("jsdom");
+const win = new JSDOM("", { pretendToBeVisual: true }).window;
+global.window = win;
+global.document = win.document;
+global.fetch = require("node-fetch");
+${code}
 `
     );
   }

@@ -1,17 +1,14 @@
-// require("source-map-support").install();
-import sourceMapSupport from "source-map-support";
 import esbuild from "esbuild";
 import { resolve } from "path";
 import { getExternals } from "./getExternals";
 import type { Conf } from "./getConfig";
-import { child } from "./child";
+import { spawn } from "./spawn";
 import { copyPackage } from "./copyPackage";
 import { workerFork, workerStart } from "./worker";
 import { keyboard, cacheTestPath, cacheIgnoreTestPath } from "./keyboard";
+import { serve, onBuilded, releaseBrowser } from "./serve";
+import fs from "fs-extra";
 
-sourceMapSupport.install();
-
-const fs = require("fs-extra");
 const cwd = process.cwd();
 
 export async function bike(conf: Conf) {
@@ -25,7 +22,11 @@ export async function bike(conf: Conf) {
     fs.mkdirSync(resolve(cwd, conf.out!));
   }
 
-  const copyFiles = new Set([".env", ...((conf.copy as string[]) || [])]);
+  const copyFiles = new Set(
+    [conf.browser && ".env", ...((conf.copy as string[]) || [])].filter(
+      Boolean
+    ) as string[]
+  );
   copyFiles.forEach((file) => {
     const p = resolve(cwd, file);
     if (fs.existsSync(p)) {
@@ -35,15 +36,25 @@ export async function bike(conf: Conf) {
 
   copyPackage(conf);
 
-  const publicPath = resolve(cwd, conf.public);
-  if (fs.existsSync(publicPath)) {
-    fs.copySync(publicPath, resolve(cwd, conf.out!));
+  const staticPath = resolve(cwd, conf.static);
+  if (fs.existsSync(staticPath)) {
+    fs.copySync(staticPath, resolve(cwd, conf.out!));
   }
 
+  if (conf.browser) {
+    const htmlPath = resolve(cwd, conf.out!, "index.html");
+    fs.writeFileSync(htmlPath, conf["html-text"]);
+  }
+
+  if (conf.browser) {
+    serve(conf);
+  }
   const fork = () => {
+    if (conf.browser) {
+      return onBuilded(conf);
+    }
     if (conf.spawn) {
-      child(conf);
-      return;
+      return spawn(conf);
     }
     workerFork(conf);
   };
@@ -75,15 +86,23 @@ export async function bike(conf: Conf) {
   };
 
   const build = async () => {
-    if ((conf.watch || conf.start) && conf.clear) {
+    if (!conf.browser && (conf.watch || conf.start) && conf.clear) {
       console.clear();
     }
     if (conf.before) {
       await Promise.resolve(conf.before(conf));
     }
     await esbuild.build(esbuildOptions);
+
     if (conf.after) {
       conf.after(conf);
+    }
+
+    if (!conf.watch && !conf.start) {
+      if (conf.browser) {
+        releaseBrowser(conf);
+      }
+      console.log("release done.");
     }
   };
 
@@ -94,7 +113,6 @@ export async function bike(conf: Conf) {
   }
 
   if (conf.start) {
-    // require(resolve(cwd, conf.out + "/" + conf.outfile));
     fork();
   } else if (conf.watch) {
     fork();

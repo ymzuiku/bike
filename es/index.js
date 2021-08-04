@@ -1,26 +1,9 @@
 var __create = Object.create;
 var __defProp = Object.defineProperty;
-var __defProps = Object.defineProperties;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp(a, prop, b[prop]);
-    }
-  return a;
-};
-var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
 var __export = (target, all) => {
   __markAsModule(target);
@@ -38,26 +21,6 @@ var __reExport = (target, module2, desc) => {
 var __toModule = (module2) => {
   return __reExport(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", module2 && module2.__esModule && "default" in module2 ? { get: () => module2.default, enumerable: true } : { value: module2, enumerable: true })), module2);
 };
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve7, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve7(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
 
 // lib/index.ts
 __export(exports, {
@@ -65,10 +28,13 @@ __export(exports, {
   getConfig: () => getConfig,
   test: () => test
 });
+var import_source_map_support = __toModule(require("source-map-support"));
 
 // lib/getConfig.ts
 var import_yargs = __toModule(require("yargs"));
 var import_helpers = __toModule(require("yargs/helpers"));
+var import_fs_extra = __toModule(require("fs-extra"));
+var import_path = __toModule(require("path"));
 function getConfig(argv) {
   const confObj = (0, import_yargs.default)((0, import_helpers.hideBin)(argv)).option("argv", {
     type: "array",
@@ -81,6 +47,14 @@ function getConfig(argv) {
     type: "string",
     default: "src",
     description: "Source dir"
+  }).option("html", {
+    type: "string",
+    default: "index.html",
+    description: "Use base html When type is browser"
+  }).option("html-text", {
+    type: "string",
+    default: "",
+    description: "Use html-text replace html"
   }).option("out", {
     type: "string",
     description: "Build out dir, server default dist, test default dist-test"
@@ -88,17 +62,17 @@ function getConfig(argv) {
     type: "string",
     default: "index.js",
     description: "Build out dir index name"
-  }).option("public", {
+  }).option("static", {
     type: "string",
-    default: "public",
-    description: "Auto copy public's files to out"
+    default: "static",
+    description: "Auto copy static's files to out"
   }).option("entry", {
     type: "string",
     description: "Main typescript file, default: ${src}/index.ts"
-  }).option("base", {
-    type: "string",
-    default: "nodejs",
-    description: "Pick in [nodejs, browser, aoife]"
+  }).option("browser", {
+    default: false,
+    type: "boolean",
+    description: "Use Browser build types"
   }).option("spawn", {
     type: "boolean",
     default: false,
@@ -126,7 +100,7 @@ function getConfig(argv) {
     description: "Esbuild define"
   }).option("target", {
     type: "string",
-    default: "es6",
+    default: "esnext",
     description: "Esbuild target"
   }).option("splitting", {
     type: "boolean",
@@ -136,7 +110,6 @@ function getConfig(argv) {
     description: "Esbuild format"
   }).option("sourcemap", {
     type: "boolean",
-    default: true,
     description: "Esbuild use sourcemap"
   }).option("jsx-factory", {
     type: "string",
@@ -170,6 +143,25 @@ function getConfig(argv) {
     type: "boolean",
     default: true,
     description: "On reload auto clear"
+  }).option("gzip", {
+    type: "boolean",
+    description: "(only-browser) gzip watch is false, else is true"
+  }).option("host", {
+    type: "string",
+    default: "127.0.0.1",
+    description: "(only-browser) browser serve host"
+  }).option("port", {
+    type: "number",
+    default: 3300,
+    description: "(only-browser) browser serve port"
+  }).option("path-prefix", {
+    type: "string",
+    default: "/",
+    description: "(only-browser) public file path prefix"
+  }).option("proxy", {
+    type: "array",
+    default: ["/bike|http://127.0.0.1:5000"],
+    description: "(only-browser) Example proxy /bike to http://127.0.0.1:5000/bike"
   }).option("reporter", {
     alias: "r",
     type: "string",
@@ -199,6 +191,13 @@ function getConfig(argv) {
   });
   const conf = confObj.parseSync();
   conf.argv = argv.slice(2);
+  if (conf.gzip === void 0) {
+    if (conf.watch || conf.start) {
+      conf.gzip = false;
+    } else {
+      conf.gzip = true;
+    }
+  }
   if (conf.reporter === "text" || conf.reporter === "html") {
     conf.test = true;
     conf.spawn = true;
@@ -217,11 +216,12 @@ function getConfig(argv) {
     conf.entry = conf.src + "/index.ts";
   }
   if (conf.sourcemap === void 0) {
-    if (conf.watch || conf.start) {
+    if (conf.watch || conf.start || conf.reporter) {
       conf.sourcemap = true;
     }
   }
   const brower = () => {
+    conf.platform = "neutral";
     if (!conf.watch && !conf.start) {
       if (conf.depend === void 0) {
         conf.depend = true;
@@ -237,16 +237,21 @@ function getConfig(argv) {
       conf.splitting = true;
     }
   };
-  if (conf.base === "browser") {
-    brower();
-  } else if (conf.base === "aoife") {
-    brower();
-    if (!conf["jsx-factory"]) {
-      conf["jsx-factory"] = "aoife";
+  if (conf.browser) {
+    const htmlPath = (0, import_path.resolve)(process.cwd(), "index.html");
+    const html = import_fs_extra.default.readFileSync(htmlPath, "utf8");
+    const match = html.match(/src="(.*?).(ts|tsx)"/);
+    if (match && match[0]) {
+      const subMatch = match[0].match(/src="(.*?)"/);
+      if (subMatch && subMatch[1]) {
+        const url = subMatch[1];
+        const [src, entry] = url.split("/").filter(Boolean);
+        conf.src = src;
+        conf.entry = src + "/" + entry;
+      }
     }
-    if (!conf["jsx-fragment"]) {
-      conf["jsx-fragment"] = "aoife.Frag";
-    }
+    conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
+    brower();
   }
   if (conf["show-config"]) {
     delete conf["$0"];
@@ -266,17 +271,16 @@ function getConfig(argv) {
 var _conf = getConfig([]);
 
 // lib/bike.ts
-var import_source_map_support = __toModule(require("source-map-support"));
 var import_esbuild = __toModule(require("esbuild"));
-var import_path5 = __toModule(require("path"));
+var import_path7 = __toModule(require("path"));
 
 // lib/getExternals.ts
-var import_fs_extra = __toModule(require("fs-extra"));
-var import_path = __toModule(require("path"));
+var import_fs_extra2 = __toModule(require("fs-extra"));
+var import_path2 = __toModule(require("path"));
 var cwd = process.cwd();
 function getPkg() {
-  const pkgPath = (0, import_path.resolve)(cwd, "package.json");
-  if (import_fs_extra.default.existsSync(pkgPath)) {
+  const pkgPath = (0, import_path2.resolve)(cwd, "package.json");
+  if (import_fs_extra2.default.existsSync(pkgPath)) {
     return require(pkgPath) || null;
   }
   return null;
@@ -344,8 +348,8 @@ function getExternals(conf) {
     "worker_threads",
     "zlib"
   ];
-  const tsconfigPath = (0, import_path.resolve)(cwd, "tsconfig.json");
-  const selfPkg = require((0, import_path.resolve)(__dirname, "../package.json"));
+  const tsconfigPath = (0, import_path2.resolve)(cwd, "tsconfig.json");
+  const selfPkg = require((0, import_path2.resolve)(__dirname, "../package.json"));
   externals = [...externals, ...getKeys(selfPkg.dependencies)];
   externals = [...externals, ...getKeys(selfPkg.devDependencies)];
   const pkg = getPkg();
@@ -362,7 +366,7 @@ function getExternals(conf) {
       externals = [...externals, ...getKeys(pkg.devDependencies)];
     }
   }
-  if (import_fs_extra.default.existsSync(tsconfigPath)) {
+  if (import_fs_extra2.default.existsSync(tsconfigPath)) {
     const tsconfig = require(tsconfigPath);
     if (tsconfig.exclude) {
       externals = [...externals, ...tsconfig.exclude];
@@ -371,27 +375,33 @@ function getExternals(conf) {
   return Array.from(new Set(externals));
 }
 
-// lib/child.ts
+// lib/spawn.ts
 var import_child_process = __toModule(require("child_process"));
 var lastChild = null;
-function child(conf) {
-  var _a, _b;
+function spawn(conf) {
   if (lastChild) {
     lastChild.kill(0);
     lastChild = null;
   }
   let c8 = [];
   const c8Include = [];
-  if ((_a = conf["c8-include"]) == null ? void 0 : _a.length) {
+  if (conf["c8-include"]?.length) {
     conf["c8-include"].forEach((k) => {
       c8Include.push("--include");
       c8Include.push(k);
     });
   }
-  const c8Exclude = ["./coverage", "./node_modules", ".vscode"];
-  if ((_b = conf["c8-exclude"]) == null ? void 0 : _b.length) {
+  const c8Exclude = [
+    "--exclude",
+    "./coverage",
+    "--exclude",
+    "./node_modules",
+    "--exclude",
+    ".vscode"
+  ];
+  if (conf["c8-exclude"]?.length) {
     conf["c8-exclude"].forEach((k) => {
-      c8Exclude.push("--include");
+      c8Exclude.push("--exclude");
       c8Exclude.push(k);
     });
   }
@@ -405,7 +415,7 @@ function child(conf) {
       conf["c8-skip-full"] == true && "--skip-full"
     ];
   }
-  const ls = (0, import_child_process.spawn)("npx", [
+  const ls = import_child_process.default.spawn("npx", [
     ...c8,
     "node",
     conf.out + "/" + conf.outfile,
@@ -419,22 +429,22 @@ function child(conf) {
 }
 
 // lib/copyPackage.ts
-var import_fs_extra2 = __toModule(require("fs-extra"));
-var import_path2 = __toModule(require("path"));
+var import_fs_extra3 = __toModule(require("fs-extra"));
+var import_path3 = __toModule(require("path"));
 var cwd2 = process.cwd();
 function copyPackage(conf) {
-  const pkgPath = (0, import_path2.resolve)(cwd2, "package.json");
-  if (!import_fs_extra2.default.existsSync(pkgPath)) {
+  const pkgPath = (0, import_path3.resolve)(cwd2, "package.json");
+  if (!import_fs_extra3.default.existsSync(pkgPath)) {
     return;
   }
   const pkg = require(pkgPath) || null;
   delete pkg.devDependencies;
-  import_fs_extra2.default.writeJSONSync((0, import_path2.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
+  import_fs_extra3.default.writeJSONSync((0, import_path3.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
 }
 
 // lib/worker.ts
 var import_cluster = __toModule(require("cluster"));
-var import_path3 = __toModule(require("path"));
+var import_path4 = __toModule(require("path"));
 function getMsg(msg) {
   if (!/^bike::/.test(msg)) {
     return;
@@ -464,9 +474,9 @@ var workerStart = () => {
       });
       try {
         if (/\.mjs/.test(conf.outfile)) {
-          import((0, import_path3.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
+          import((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
         } else {
-          require((0, import_path3.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
+          require((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
         }
       } catch (error) {
         console.error(error);
@@ -480,16 +490,16 @@ var workerStart = () => {
 var import_readline = __toModule(require("readline"));
 var import_cluster2 = __toModule(require("cluster"));
 var import_chalk = __toModule(require("chalk"));
-var import_path4 = __toModule(require("path"));
-var import_fs_extra3 = __toModule(require("fs-extra"));
+var import_path5 = __toModule(require("path"));
+var import_fs_extra4 = __toModule(require("fs-extra"));
 var cwd3 = process.cwd();
-var cacheIgnoreTestPath = (0, import_path4.resolve)(cwd3, "node_modules", ".bike.test.ignore");
-var cacheTestPath = (0, import_path4.resolve)(cwd3, "node_modules", ".bike.test.json");
+var cacheIgnoreTestPath = (0, import_path5.resolve)(cwd3, "node_modules", ".bike.test.ignore");
+var cacheTestPath = (0, import_path5.resolve)(cwd3, "node_modules", ".bike.test.json");
 function parse() {
-  return import_fs_extra3.default.readJSONSync(cacheTestPath);
+  return import_fs_extra4.default.readJSONSync(cacheTestPath);
 }
 function saveFile(obj) {
-  import_fs_extra3.default.writeJSONSync(cacheTestPath, obj, { spaces: 2 });
+  import_fs_extra4.default.writeJSONSync(cacheTestPath, obj, { spaces: 2 });
 }
 var event = {
   focus: (num) => {
@@ -540,127 +550,263 @@ var keyboard = (conf) => {
   });
 };
 
-// lib/bike.ts
-import_source_map_support.default.install();
-var fs4 = require("fs-extra");
+// lib/serve.ts
+var import_fastify = __toModule(require("fastify"));
+var import_fastify_websocket = __toModule(require("fastify-websocket"));
+var import_fs_extra5 = __toModule(require("fs-extra"));
+var import_path6 = __toModule(require("path"));
+var import_fastify_http_proxy = __toModule(require("fastify-http-proxy"));
+var import_fastify_static = __toModule(require("fastify-static"));
+var import_fastify_compress = __toModule(require("fastify-compress"));
+var import_crypto = __toModule(require("crypto"));
 var cwd4 = process.cwd();
-function bike(conf) {
-  return __async(this, null, function* () {
-    if (workerStart()) {
-      return;
-    }
-    if (conf.test && conf.watch) {
-      keyboard(conf);
-    }
-    if (!fs4.existsSync((0, import_path5.resolve)(cwd4, conf.out))) {
-      fs4.mkdirSync((0, import_path5.resolve)(cwd4, conf.out));
-    }
-    const copyFiles = new Set([".env", ...conf.copy || []]);
-    copyFiles.forEach((file) => {
-      const p = (0, import_path5.resolve)(cwd4, file);
-      if (fs4.existsSync(p)) {
-        fs4.copyFileSync(p, (0, import_path5.resolve)(cwd4, conf.out, file));
+var wsList = new Set();
+var serve = (conf) => {
+  if (!conf.watch) {
+    return;
+  }
+  const htmlPath = (0, import_path6.resolve)(conf.out, "index.html");
+  const { gzip, host, port, proxy } = conf;
+  const publicPrefix = conf["path-prefix"];
+  const app = (0, import_fastify.fastify)();
+  if (proxy) {
+    proxy.forEach((p) => {
+      const [prefix, other] = p.split("|");
+      const opt = {
+        prefix,
+        upstream: other,
+        rewritePrefix: prefix,
+        http2: false
+      };
+      app.register(import_fastify_http_proxy.default, opt);
+    });
+  }
+  if (gzip) {
+    app.register(import_fastify_compress.default, { global: true });
+  }
+  app.register(import_fastify_static.default, {
+    root: (0, import_path6.resolve)(cwd4, conf.out),
+    prefix: publicPrefix
+  });
+  app.register(import_fastify_websocket.default);
+  app.get("/", function(req, rep) {
+    var html = import_fs_extra5.default.readFileSync(htmlPath, "utf8");
+    html = html.replace("</html>", "");
+    html += `<script>${devHot}<\/script></html>`;
+    rep.code(200).header("Content-Type", "text/html; charset=utf-8").send(html);
+  });
+  app.get("/devhot", { websocket: true }, (connection) => {
+    connection.socket.on("message", (msg) => {
+      if (msg === "reload") {
+        wsList.add(connection.socket);
       }
     });
-    copyPackage(conf);
-    const publicPath = (0, import_path5.resolve)(cwd4, conf.public);
-    if (fs4.existsSync(publicPath)) {
-      fs4.copySync(publicPath, (0, import_path5.resolve)(cwd4, conf.out));
-    }
-    const fork = () => {
-      if (conf.spawn) {
-        child(conf);
+  });
+  app.listen(port, host, () => {
+    console.log(`listen: http://${host}:${port}`);
+  });
+};
+var releaseBrowser = (conf) => {
+  const indexJS = import_fs_extra5.default.readFileSync((0, import_path6.resolve)(conf.out, "index.js"));
+  const key = (0, import_crypto.createHmac)("sha256", "bike").update(indexJS).digest("hex").slice(5, 13);
+  import_fs_extra5.default.renameSync((0, import_path6.resolve)(conf.out, "index.js"), (0, import_path6.resolve)(conf.out, `index-${key}.js`));
+  const _html = conf["html-text"].replace("/index.js?bike=1", `"/index-${key}.js"`);
+  import_fs_extra5.default.writeFileSync((0, import_path6.resolve)(conf.out, "index.html"), _html);
+};
+var keep = null;
+var onBuilded = (conf) => {
+  if (keep) {
+    clearTimeout(keep);
+    keep = null;
+  }
+  keep = setTimeout(() => {
+    wsList.forEach((ws) => {
+      if (ws.readyState != 1) {
+        wsList.delete(ws);
         return;
       }
-      workerFork(conf);
-    };
-    let external = void 0;
-    if (conf.bundle) {
-      if (conf.external) {
-        external = [...getExternals(conf), ...conf.external];
-      } else {
-        external = getExternals(conf);
-      }
-    }
-    const esbuildOptions = {
-      entryPoints: [(0, import_path5.resolve)(cwd4, conf.entry)],
-      bundle: conf.bundle,
-      target: conf.target || ["node16", "es6"],
-      minify: conf.minify,
-      define: conf.define,
-      platform: conf.platform,
-      splitting: conf.splitting,
-      format: conf.format,
-      jsxFactory: conf["jsx-factory"],
-      jsxFragment: conf["jsx-fragment"],
-      external,
-      outdir: conf.splitting ? conf.out : void 0,
-      outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
-      sourcemap: conf.sourcemap
-    };
-    const build = () => __async(this, null, function* () {
-      if ((conf.watch || conf.start) && conf.clear) {
-        console.clear();
-      }
-      if (conf.before) {
-        yield Promise.resolve(conf.before(conf));
-      }
-      yield import_esbuild.default.build(esbuildOptions);
-      if (conf.after) {
-        conf.after(conf);
+      try {
+        ws.send("reload");
+      } catch (err) {
+        console.error(err);
+        wsList.delete(ws);
       }
     });
-    try {
-      yield build();
-    } catch (err) {
-      throw err;
+  }, 66);
+};
+var devHot = `(function () {
+  window.devHot = true;
+  let ws = new WebSocket("ws://" + location.host + "/devhot");
+  ws.onmessage = (env) => {
+    if (env.data === "reload") {
+      window.location.reload();
     }
-    if (conf.start) {
+  };
+  ws.onopen = () => {
+    if (ws.readyState > 0) {
+      console.log("[bike-hot] start");
+      ws.send("reload");
+    }
+  };
+  ws.onclose = () => {
+    console.log("[bike-hot] closed");
+    reStart();
+  };
+  ws.onerror = () => {
+    console.log("[bike-hot] error");
+    reStart();
+  };
+
+  let checker;
+  const reStart = () => {
+    console.log("[bike-hot] reconnect");
+    if (checker) {
+      checker.close();
+    }
+    checker = null;
+    checker = new WebSocket("ws://" + location.host + "/devhot");
+    checker.onopen = () => {
+      if (checker.readyState > 0) {
+        window.location.reload();
+      }
+    };
+    setTimeout(reStart, 2000);
+  };
+})();`;
+
+// lib/bike.ts
+var import_fs_extra6 = __toModule(require("fs-extra"));
+var cwd5 = process.cwd();
+async function bike(conf) {
+  if (workerStart()) {
+    return;
+  }
+  if (conf.test && conf.watch) {
+    keyboard(conf);
+  }
+  if (!import_fs_extra6.default.existsSync((0, import_path7.resolve)(cwd5, conf.out))) {
+    import_fs_extra6.default.mkdirSync((0, import_path7.resolve)(cwd5, conf.out));
+  }
+  const copyFiles = new Set([conf.browser && ".env", ...conf.copy || []].filter(Boolean));
+  copyFiles.forEach((file) => {
+    const p = (0, import_path7.resolve)(cwd5, file);
+    if (import_fs_extra6.default.existsSync(p)) {
+      import_fs_extra6.default.copyFileSync(p, (0, import_path7.resolve)(cwd5, conf.out, file));
+    }
+  });
+  copyPackage(conf);
+  const staticPath = (0, import_path7.resolve)(cwd5, conf.static);
+  if (import_fs_extra6.default.existsSync(staticPath)) {
+    import_fs_extra6.default.copySync(staticPath, (0, import_path7.resolve)(cwd5, conf.out));
+  }
+  if (conf.browser) {
+    const htmlPath = (0, import_path7.resolve)(cwd5, conf.out, "index.html");
+    import_fs_extra6.default.writeFileSync(htmlPath, conf["html-text"]);
+  }
+  if (conf.browser) {
+    serve(conf);
+  }
+  const fork = () => {
+    if (conf.browser) {
+      return onBuilded(conf);
+    }
+    if (conf.spawn) {
+      return spawn(conf);
+    }
+    workerFork(conf);
+  };
+  let external = void 0;
+  if (conf.bundle) {
+    if (conf.external) {
+      external = [...getExternals(conf), ...conf.external];
+    } else {
+      external = getExternals(conf);
+    }
+  }
+  const esbuildOptions = {
+    entryPoints: [(0, import_path7.resolve)(cwd5, conf.entry)],
+    bundle: conf.bundle,
+    target: conf.target || ["node16", "es6"],
+    minify: conf.minify,
+    define: conf.define,
+    platform: conf.platform,
+    splitting: conf.splitting,
+    format: conf.format,
+    jsxFactory: conf["jsx-factory"],
+    jsxFragment: conf["jsx-fragment"],
+    external,
+    outdir: conf.splitting ? conf.out : void 0,
+    outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
+    sourcemap: conf.sourcemap
+  };
+  const build = async () => {
+    if (!conf.browser && (conf.watch || conf.start) && conf.clear) {
+      console.clear();
+    }
+    if (conf.before) {
+      await Promise.resolve(conf.before(conf));
+    }
+    await import_esbuild.default.build(esbuildOptions);
+    if (conf.after) {
+      conf.after(conf);
+    }
+    if (!conf.watch && !conf.start) {
+      if (conf.browser) {
+        releaseBrowser(conf);
+      }
+      console.log("release done.");
+    }
+  };
+  try {
+    await build();
+  } catch (err) {
+    throw err;
+  }
+  if (conf.start) {
+    fork();
+  } else if (conf.watch) {
+    fork();
+    let lock = false;
+    import_fs_extra6.default.watch(conf.src, { recursive: true }, async () => {
+      if (lock) {
+        return;
+      }
+      lock = true;
+      await build();
       fork();
-    } else if (conf.watch) {
-      fork();
-      let lock = false;
-      fs4.watch(conf.src, { recursive: true }, () => __async(this, null, function* () {
+      setTimeout(() => {
+        lock = false;
+      }, 65);
+    });
+    if (!conf.all) {
+      if (!import_fs_extra6.default.existsSync(cacheTestPath)) {
+        import_fs_extra6.default.writeFileSync(cacheTestPath, "{}");
+      }
+      import_fs_extra6.default.watch(cacheTestPath, async () => {
+        if (import_fs_extra6.default.existsSync(cacheIgnoreTestPath)) {
+          import_fs_extra6.default.rmSync(cacheIgnoreTestPath);
+          return;
+        }
         if (lock) {
           return;
         }
         lock = true;
-        yield build();
+        await build();
         fork();
         setTimeout(() => {
           lock = false;
         }, 65);
-      }));
-      if (!conf.all) {
-        if (!fs4.existsSync(cacheTestPath)) {
-          fs4.writeFileSync(cacheTestPath, "{}");
-        }
-        fs4.watch(cacheTestPath, () => __async(this, null, function* () {
-          if (fs4.existsSync(cacheIgnoreTestPath)) {
-            fs4.rmSync(cacheIgnoreTestPath);
-            return;
-          }
-          if (lock) {
-            return;
-          }
-          lock = true;
-          yield build();
-          fork();
-          setTimeout(() => {
-            lock = false;
-          }, 65);
-        }));
-      }
+      });
     }
-  });
+  }
 }
 
 // lib/test.ts
-var import_path6 = __toModule(require("path"));
-var import_fs_extra4 = __toModule(require("fs-extra"));
-var cwd5 = process.cwd();
+var import_path8 = __toModule(require("path"));
+var import_fs_extra7 = __toModule(require("fs-extra"));
+var cwd6 = process.cwd();
 var test = (conf) => {
-  conf.entry = (0, import_path6.resolve)(conf.out, "index.ts");
+  conf.entry = (0, import_path8.resolve)(conf.out, "index.ts");
   if (!conf.watch) {
     conf.start = true;
   }
@@ -669,11 +815,11 @@ var test = (conf) => {
   const reg = new RegExp(conf.match);
   function findTests(dir) {
     waitGroup += 1;
-    import_fs_extra4.default.readdir(dir).then((list) => {
+    import_fs_extra7.default.readdir(dir).then((list) => {
       list.forEach((file) => {
         waitGroup += 1;
-        const p = (0, import_path6.resolve)(dir, file);
-        import_fs_extra4.default.stat(p).then((stat) => {
+        const p = (0, import_path8.resolve)(dir, file);
+        import_fs_extra7.default.stat(p).then((stat) => {
           if (stat.isDirectory()) {
             findTests(p);
           } else if (reg.test(file)) {
@@ -685,42 +831,45 @@ var test = (conf) => {
       waitGroup -= 1;
     });
   }
-  if (!import_fs_extra4.default.existsSync(conf.out)) {
-    import_fs_extra4.default.mkdirpSync(conf.out);
+  if (!import_fs_extra7.default.existsSync(conf.out)) {
+    import_fs_extra7.default.mkdirpSync(conf.out);
   }
-  function createCode() {
-    return __async(this, null, function* () {
-      findTests((0, import_path6.resolve)(cwd5, conf.src));
-      yield new Promise((res) => {
-        const stop = setInterval(() => {
-          if (waitGroup == 0) {
-            clearInterval(stop);
-            res(void 0);
-          }
-        }, 20);
-      });
-      const code = files.map((file) => `import "${file}";`).join("\n");
-      yield import_fs_extra4.default.writeFile(conf.entry, `${code}
-
-global.bikeTestAll = ${conf.all};
-global.bikeReporter = "${conf.reporter || "none"}";
-`);
+  async function createCode() {
+    findTests((0, import_path8.resolve)(cwd6, conf.src));
+    await new Promise((res) => {
+      const stop = setInterval(() => {
+        if (waitGroup == 0) {
+          clearInterval(stop);
+          res(void 0);
+        }
+      }, 20);
     });
+    const code = files.map((file) => `import("${file.replace(/\.(ts|tsx|js|jsx)/, "")}");`).join("\n");
+    await import_fs_extra7.default.writeFile(conf.entry, `global.bikeConf = ${JSON.stringify(conf)};
+const { JSDOM } = require("jsdom");
+const win = new JSDOM("", { pretendToBeVisual: true }).window;
+global.window = win;
+global.document = win.document;
+global.fetch = require("node-fetch");
+${code}
+`);
   }
   let createdCoded = false;
-  function before() {
-    return __async(this, null, function* () {
-      if (!createdCoded || conf.rematch) {
-        yield createCode();
-        createdCoded = true;
-      }
-    });
+  async function before() {
+    if (!createdCoded || conf.rematch) {
+      await createCode();
+      createdCoded = true;
+    }
   }
-  bike(__spreadProps(__spreadValues({}, conf), { before }));
+  bike({ ...conf, before });
 };
+
+// lib/index.ts
+import_source_map_support.default.install();
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   bike,
   getConfig,
   test
 });
+//# sourceMappingURL=index.js.map

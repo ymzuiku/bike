@@ -1,5 +1,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import fs from "fs-extra";
+import { resolve } from "path";
 
 export function getConfig(argv: string[]) {
   const confObj = yargs(hideBin(argv))
@@ -17,6 +19,16 @@ export function getConfig(argv: string[]) {
       default: "src",
       description: "Source dir",
     })
+    .option("html", {
+      type: "string",
+      default: "index.html",
+      description: "Use base html When type is browser",
+    })
+    .option("html-text", {
+      type: "string",
+      default: "",
+      description: "Use html-text replace html",
+    })
     .option("out", {
       type: "string",
       description: "Build out dir, server default dist, test default dist-test",
@@ -26,19 +38,19 @@ export function getConfig(argv: string[]) {
       default: "index.js",
       description: "Build out dir index name",
     })
-    .option("public", {
+    .option("static", {
       type: "string",
-      default: "public",
-      description: "Auto copy public's files to out",
+      default: "static",
+      description: "Auto copy static's files to out",
     })
     .option("entry", {
       type: "string",
       description: "Main typescript file, default: ${src}/index.ts",
     })
-    .option("base", {
-      type: "string",
-      default: "nodejs",
-      description: "Pick in [nodejs, browser, aoife]",
+    .option("browser", {
+      default: false,
+      type: "boolean",
+      description: "Use Browser build types",
     })
     .option("spawn", {
       type: "boolean",
@@ -74,7 +86,7 @@ export function getConfig(argv: string[]) {
     })
     .option("target", {
       type: "string",
-      default: "es6",
+      default: "esnext",
       description: "Esbuild target",
     })
     .option("splitting", {
@@ -87,7 +99,6 @@ export function getConfig(argv: string[]) {
     })
     .option("sourcemap", {
       type: "boolean",
-      default: true,
       description: "Esbuild use sourcemap",
     })
     .option("jsx-factory", {
@@ -130,6 +141,31 @@ export function getConfig(argv: string[]) {
       default: true,
       description: "On reload auto clear",
     })
+    .option("gzip", {
+      type: "boolean",
+      description: "(only-browser) gzip watch is false, else is true",
+    })
+    .option("host", {
+      type: "string",
+      default: "127.0.0.1",
+      description: "(only-browser) browser serve host",
+    })
+    .option("port", {
+      type: "number",
+      default: 3300,
+      description: "(only-browser) browser serve port",
+    })
+    .option("path-prefix", {
+      type: "string",
+      default: "/",
+      description: "(only-browser) public file path prefix",
+    })
+    .option("proxy", {
+      type: "array",
+      default: ["/bike|http://127.0.0.1:5000"],
+      description:
+        "(only-browser) Example proxy /bike to http://127.0.0.1:5000/bike",
+    })
     .option("reporter", {
       alias: "r",
       type: "string",
@@ -168,6 +204,14 @@ export function getConfig(argv: string[]) {
   // 根据conf参数，初始化一些条件和逻辑
   conf.argv = argv.slice(2);
 
+  if (conf.gzip === undefined) {
+    if (conf.watch || conf.start) {
+      conf.gzip = false;
+    } else {
+      conf.gzip = true;
+    }
+  }
+
   if (conf.reporter === "text" || conf.reporter === "html") {
     conf.test = true;
     conf.spawn = true;
@@ -190,12 +234,13 @@ export function getConfig(argv: string[]) {
   }
 
   if (conf.sourcemap === undefined) {
-    if (conf.watch || conf.start) {
+    if (conf.watch || conf.start || conf.reporter) {
       conf.sourcemap = true;
     }
   }
 
   const brower = () => {
+    conf.platform = "neutral";
     if (!conf.watch && !conf.start) {
       if (conf.depend === undefined) {
         conf.depend = true;
@@ -212,16 +257,22 @@ export function getConfig(argv: string[]) {
     }
   };
 
-  if (conf.base === "browser") {
-    brower();
-  } else if (conf.base === "aoife") {
-    brower();
-    if (!conf["jsx-factory"]) {
-      conf["jsx-factory"] = "aoife";
+  if (conf.browser) {
+    // 解析html
+    const htmlPath = resolve(process.cwd(), "index.html");
+    const html = fs.readFileSync(htmlPath, "utf8");
+    const match = html.match(/src="(.*?).(ts|tsx)"/);
+    if (match && match[0]) {
+      const subMatch = match[0].match(/src="(.*?)"/);
+      if (subMatch && subMatch[1]) {
+        const url = subMatch[1];
+        const [src, entry] = url.split("/").filter(Boolean);
+        conf.src = src;
+        conf.entry = src + "/" + entry;
+      }
     }
-    if (!conf["jsx-fragment"]) {
-      conf["jsx-fragment"] = "aoife.Frag";
-    }
+    conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
+    brower();
   }
 
   if (conf["show-config"]) {
