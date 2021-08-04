@@ -64,9 +64,20 @@ async function runOne(key: string) {
 
 async function runTest() {
   // 读取需要测试的对象
-  const task = conf().all
-    ? Object.keys(cache.it)
-    : event.load(Object.keys(cache.it));
+  let task = [];
+  if (conf().focus) {
+    const reg = new RegExp(conf().focus);
+    Object.keys(cache.it).forEach((k) => {
+      if (reg.test(k)) {
+        task.push(k);
+        console.log(gray("Focus task: " + k));
+      }
+    });
+  } else {
+    task = conf().all
+      ? Object.keys(cache.it)
+      : event.load(Object.keys(cache.it));
+  }
 
   task.forEach((key: string) => {
     cache.matchIt[key] = cache.it[key];

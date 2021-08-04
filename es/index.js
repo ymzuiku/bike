@@ -124,6 +124,10 @@ function getConfig(argv) {
     type: "boolean",
     default: false,
     description: "Always test all case, ignore .bike.test.yaml"
+  }).option("focus", {
+    alias: "f",
+    type: "string",
+    description: "Use RegExp focus some test"
   }).option("start", {
     type: "boolean",
     default: false,
