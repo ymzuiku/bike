@@ -74,68 +74,60 @@ Use `bike --help`:
 
 ```
 Options:
-      --help          Show help                 [boolean]
-      --version       Show version number       [boolean]
-      --show-config   Log cli config at run
-                               [boolean] [default: false]
-      --src           Source dir[string] [default: "src"]
-      --out           Build out dir, server default dist,
-                      test default dist-test     [string]
-      --outfile       Build out dir index name
-                           [string] [default: "index.js"]
-      --public        Auto copy public's files to out
-                             [string] [default: "public"]
-      --entry         Main typescript file, default:
-                      ${src}/index.ts            [string]
-      --base          Pick in [nodejs, browser, aoife]
-                             [string] [default: "nodejs"]
-      --spawn         Use child_process.spawn replace
-                      cluster.fork
-                               [boolean] [default: false]
-      --copy          Copy other file to dist     [array]
-      --minify        Esbuild minify            [boolean]
-      --bundle        Esbuild bundle
-                                [boolean] [default: true]
-      --depend        Esbuild bundle dependencies
-                               [boolean] [default: false]
-  -e, --external      Esbuild external            [array]
-      --define        Esbuild define             [string]
-      --target        Esbuild target
-                                [string] [default: "es6"]
-      --splitting     Esbuild splitting         [boolean]
-      --format        Esbuild format             [string]
-      --sourcemap     Esbuild use sourcemap
-                                [boolean] [default: true]
-      --jsx-factory   Esbuild jsx-factory        [string]
-      --jsx-fragment  Esbuild jsx-fragment       [string]
-  -t, --test          Is use test
-                               [boolean] [default: false]
-      --all           Always test all case, ignore
-                      .bike.test.yaml
-                               [boolean] [default: false]
-      --start         Start server after on build
-                               [boolean] [default: false]
-      --platform      Esbuild platform
-                               [string] [default: "node"]
-  -w, --watch         Watch dir on change reload
-                               [boolean] [default: false]
-      --clear         On reload auto clear
-                                [boolean] [default: true]
-  -r, --reporter      (only-test) c8 reporter, pick in
-                      :[text, html]              [string]
-      --match         (only-test) test files RegExp
-                      string
-          [string] [default: "(.test|.spec|_test|_spec)"]
-      --rematch       (only-test) auto rematch all test
-                      files on watch
-                               [boolean] [default: false]
-  -n, --c8-include    (only-test) c8 include all files
-                               [boolean] [default: false]
-  -x, --c8-exclude    (only-test) c8 exclude all files
-                               [boolean] [default: false]
-      --c8-config     (only-test) c8 path to JSON
-                      configuration file
-                                   [string] [default: ""]
-      --c8-skip-full  (only-test) c8 skip full in text
-                      that ignore in html       [boolean]
+      --help          Show help                                       [boolean]
+      --version       Show version number                             [boolean]
+      --argv          Backup all argv                                   [array]
+      --show-config   Log cli config at run          [boolean] [default: false]
+      --src           Source dir                      [string] [default: "src"]
+      --html          Use base html When type is browser
+                                               [string] [default: "index.html"]
+      --html-text     Use html-text replace html         [string] [default: ""]
+      --out           Build out dir, server default dist, test default
+                      dist-test                                        [string]
+      --outfile       Build out dir index name   [string] [default: "index.js"]
+      --static        Auto copy static's files to out
+                                                   [string] [default: "static"]
+      --entry         Main typescript file, default: ${src}/index.ts   [string]
+      --browser       Use Browser build types        [boolean] [default: false]
+      --spawn         Use child_process.spawn replace cluster.fork
+                                                     [boolean] [default: false]
+      --copy          Copy other file to dist                           [array]
+      --minify        Esbuild minify                                  [boolean]
+      --bundle        Esbuild bundle                  [boolean] [default: true]
+      --depend        Esbuild bundle dependencies    [boolean] [default: false]
+  -e, --external      Esbuild external                                  [array]
+      --define        Esbuild define                                   [string]
+      --target        Esbuild target               [string] [default: "esnext"]
+      --splitting     Esbuild splitting                               [boolean]
+      --format        Esbuild format                                   [string]
+      --sourcemap     Esbuild use sourcemap                           [boolean]
+      --jsx-factory   Esbuild jsx-factory                              [string]
+      --jsx-fragment  Esbuild jsx-fragment                             [string]
+  -t, --test          Is use test                    [boolean] [default: false]
+      --all           Always test all case, ignore .bike.test.yaml
+                                                     [boolean] [default: false]
+  -f, --focus         Use RegExp focus some test                       [string]
+      --start         Start server after on build    [boolean] [default: false]
+      --platform      Esbuild platform               [string] [default: "node"]
+  -w, --watch         Watch dir on change reload     [boolean] [default: false]
+      --clear         On reload auto clear            [boolean] [default: true]
+      --gzip          (only-browser) gzip watch is false, else is true[boolean]
+      --host          (only-browser) browser serve host
+                                                [string] [default: "127.0.0.1"]
+      --port          (only-browser) browser serve port[number] [default: 3300]
+      --path-prefix   (only-browser) public file path prefix
+                                                        [string] [default: "/"]
+      --proxy         (only-browser) Example proxy /bike to
+                      http://127.0.0.1:5000/bike
+                             [array] [default: ["/bike|http://127.0.0.1:5000"]]
+  -r, --reporter      (only-test) c8 reporter, pick in :[text, html]   [string]
+      --match         (only-test) test files RegExp string
+                                [string] [default: "(.test|.spec|_test|_spec)"]
+      --rematch       (only-test) auto rematch all test files on watch
+                                                     [boolean] [default: false]
+  -n, --c8-include    (only-test) c8 include all files                  [array]
+  -x, --c8-exclude    (only-test) c8 exclude all files                  [array]
+      --c8-config     (only-test) c8 path to JSON configuration file   [string]
+      --c8-skip-full  (only-test) c8 skip full in text that ignore in html
+                                                                      [boolean]
 ```
