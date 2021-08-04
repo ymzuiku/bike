@@ -25,7 +25,7 @@ export const serve = (conf: Conf) => {
 
   if (proxy) {
     proxy.forEach((p) => {
-      const [prefix, other] = p.split("|");
+      const [prefix, other] = (p as string).split("|");
       const opt = {
         prefix,
         upstream: other,

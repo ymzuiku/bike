@@ -37,7 +37,7 @@ function getConfig(argv) {
   const confObj = (0, import_yargs.default)((0, import_helpers.hideBin)(argv)).option("argv", {
     type: "array",
     description: "Backup all argv"
-  }).option("show-config", {
+  }).option("log-config", {
     type: "boolean",
     default: false,
     description: "Log cli config at run"
@@ -87,7 +87,6 @@ function getConfig(argv) {
     description: "Esbuild bundle"
   }).option("depend", {
     type: "boolean",
-    default: false,
     description: "Esbuild bundle dependencies"
   }).option("external", {
     alias: "e",
@@ -98,8 +97,7 @@ function getConfig(argv) {
     description: "Esbuild define"
   }).option("target", {
     type: "string",
-    default: "esnext",
-    description: "Esbuild target"
+    description: "Esbuild target, browser default: es6, nodejs default: esnext"
   }).option("splitting", {
     type: "boolean",
     description: "Esbuild splitting"
@@ -109,12 +107,6 @@ function getConfig(argv) {
   }).option("sourcemap", {
     type: "boolean",
     description: "Esbuild use sourcemap"
-  }).option("jsx-factory", {
-    type: "string",
-    description: "Esbuild jsx-factory"
-  }).option("jsx-fragment", {
-    type: "string",
-    description: "Esbuild jsx-fragment"
   }).option("test", {
     alias: "t",
     type: "boolean",
@@ -162,8 +154,7 @@ function getConfig(argv) {
     description: "(only-browser) public file path prefix"
   }).option("proxy", {
     type: "array",
-    default: ["/bike|http://127.0.0.1:5000"],
-    description: "(only-browser) Example proxy /bike to http://127.0.0.1:5000/bike"
+    description: "(only-browser) Example: '/bike|http://127.0.0.1:5000' is proxy /bike to http://127.0.0.1:5000/bike"
   }).option("reporter", {
     alias: "r",
     type: "string",
@@ -193,19 +184,6 @@ function getConfig(argv) {
   });
   const conf = confObj.parseSync();
   conf.argv = argv.slice(2);
-  if (conf["show-config"]) {
-    delete conf["$0"];
-    delete conf["_"];
-    Object.keys(conf).forEach((k) => {
-      if (/-/.test(k) || k.length === 1) {
-        delete conf[k];
-      }
-    });
-    console.log(conf);
-    console.log(" ");
-    console.log("Stop with only show config");
-    process.exit();
-  }
   return conf;
 }
 var _conf = getConfig([]);
@@ -650,15 +628,25 @@ var baseConfig = (conf) => {
       conf.sourcemap = true;
     }
   }
+  if (conf.target === void 0) {
+    if (conf.browser) {
+      conf.target = "es6";
+    } else {
+      conf.target = "esnext";
+    }
+  }
   const brower = () => {
     conf.platform = "neutral";
     if (!conf.watch && !conf.start) {
-      if (conf.depend === void 0) {
-        conf.depend = true;
-      }
       if (conf.minify === void 0) {
         conf.minify = true;
       }
+      if (conf.sourcemap === void 0) {
+        conf.sourcemap = false;
+      }
+    }
+    if (conf.depend === void 0) {
+      conf.depend = true;
     }
     if (conf.format === void 0) {
       conf.format = "esm";
@@ -682,6 +670,17 @@ var baseConfig = (conf) => {
     }
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
     brower();
+  }
+  if (conf["log-config"]) {
+    delete conf["$0"];
+    const out = {};
+    Object.keys(conf).sort((a, b) => a - b).forEach((k) => {
+      out[k] = conf[k];
+    });
+    console.log(out);
+    console.log(" ");
+    console.log("Stop with only log config");
+    process.exit();
   }
   return conf;
 };
@@ -744,8 +743,6 @@ async function bike(config) {
     platform: conf.platform,
     splitting: conf.splitting,
     format: conf.format,
-    jsxFactory: conf["jsx-factory"],
-    jsxFragment: conf["jsx-fragment"],
     external,
     outdir: conf.splitting ? conf.out : void 0,
     outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,

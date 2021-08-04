@@ -38,15 +38,26 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
     }
   }
 
+  if (conf.target === undefined) {
+    if (conf.browser) {
+      conf.target = "es6";
+    } else {
+      conf.target = "esnext";
+    }
+  }
+
   const brower = () => {
     conf.platform = "neutral";
     if (!conf.watch && !conf.start) {
-      if (conf.depend === undefined) {
-        conf.depend = true;
-      }
       if (conf.minify === undefined) {
         conf.minify = true;
       }
+      if (conf.sourcemap === undefined) {
+        conf.sourcemap = false;
+      }
+    }
+    if (conf.depend === undefined) {
+      conf.depend = true;
     }
     if (conf.format === undefined) {
       conf.format = "esm";
@@ -73,5 +84,24 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
     brower();
   }
+
+  if (conf["log-config"]) {
+    delete (conf as any)["$0"];
+    // delete (conf as any)["_"];
+    const out: any = {};
+    Object.keys(conf)
+      .sort((a: any, b: any) => a - b)
+      .forEach((k) => {
+        // if (/-/.test(k) || k.length === 1) {
+        //   return;
+        // }
+        out[k] = conf[k];
+      });
+    console.log(out);
+    console.log(" ");
+    console.log("Stop with only log config");
+    process.exit();
+  }
+
   return conf as any;
 };

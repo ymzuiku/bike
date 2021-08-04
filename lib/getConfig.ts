@@ -7,7 +7,7 @@ export function getConfig(argv: string[]) {
       type: "array",
       description: "Backup all argv",
     })
-    .option("show-config", {
+    .option("log-config", {
       type: "boolean",
       default: false,
       description: "Log cli config at run",
@@ -70,7 +70,6 @@ export function getConfig(argv: string[]) {
     })
     .option("depend", {
       type: "boolean",
-      default: false,
       description: "Esbuild bundle dependencies",
     })
     .option("external", {
@@ -84,8 +83,8 @@ export function getConfig(argv: string[]) {
     })
     .option("target", {
       type: "string",
-      default: "esnext",
-      description: "Esbuild target",
+      description:
+        "Esbuild target, browser default: es6, nodejs default: esnext",
     })
     .option("splitting", {
       type: "boolean",
@@ -98,14 +97,6 @@ export function getConfig(argv: string[]) {
     .option("sourcemap", {
       type: "boolean",
       description: "Esbuild use sourcemap",
-    })
-    .option("jsx-factory", {
-      type: "string",
-      description: "Esbuild jsx-factory",
-    })
-    .option("jsx-fragment", {
-      type: "string",
-      description: "Esbuild jsx-fragment",
     })
     .option("test", {
       alias: "t",
@@ -165,9 +156,8 @@ export function getConfig(argv: string[]) {
     })
     .option("proxy", {
       type: "array",
-      default: ["/bike|http://127.0.0.1:5000"],
       description:
-        "(only-browser) Example proxy /bike to http://127.0.0.1:5000/bike",
+        "(only-browser) Example: '/bike|http://127.0.0.1:5000' is proxy /bike to http://127.0.0.1:5000/bike",
     })
     .option("reporter", {
       alias: "r",
@@ -206,20 +196,6 @@ export function getConfig(argv: string[]) {
   const conf = confObj.parseSync();
   // 根据conf参数，初始化一些条件和逻辑
   conf.argv = argv.slice(2);
-
-  if (conf["show-config"]) {
-    delete (conf as any)["$0"];
-    delete (conf as any)["_"];
-    Object.keys(conf).forEach((k) => {
-      if (/-/.test(k) || k.length === 1) {
-        delete conf[k];
-      }
-    });
-    console.log(conf);
-    console.log(" ");
-    console.log("Stop with only show config");
-    process.exit();
-  }
 
   return conf;
 }
