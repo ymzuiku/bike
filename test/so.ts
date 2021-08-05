@@ -92,7 +92,7 @@ export function createSo(name: string) {
         return;
       }
 
-      if (regex && regex.test(err.message)) {
+      if (regex && !regex.test(err.message)) {
         cache.errors[name] = new Error(`error ${err} isn't regex ${regex}`);
         logFail(name, cache.errors[name].stack!);
       }
