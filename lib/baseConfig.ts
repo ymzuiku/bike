@@ -3,6 +3,10 @@ import { resolve } from "path";
 import type { Conf } from "./getConfig";
 
 export const baseConfig = (conf: Partial<Conf>): Conf => {
+  if (!conf._ || !conf._[0]) {
+    console.log("Need input source dir, like: bike src");
+  }
+  conf.source = conf._![0] as any;
   if (conf.gzip === undefined) {
     if (conf.watch || conf.start) {
       conf.gzip = false;
@@ -29,7 +33,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
   }
 
   if (!conf.entry) {
-    conf.entry = conf.by + "/index.ts";
+    conf.entry = conf.source + "/index.ts";
   }
 
   if (conf.sourcemap === undefined) {
@@ -77,7 +81,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
         const [src, entry] = url.split("/").filter(Boolean);
-        conf.by = src;
+        conf.source = src;
         conf.entry = src + "/" + entry;
       }
     }

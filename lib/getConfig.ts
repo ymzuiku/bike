@@ -12,11 +12,6 @@ export function getConfig(argv: string[]) {
       default: false,
       description: "Log cli config at run",
     })
-    .option("by", {
-      type: "string",
-      default: "src",
-      description: "Source dir",
-    })
     .option("html", {
       type: "string",
       default: "index.html",
@@ -43,7 +38,7 @@ export function getConfig(argv: string[]) {
     })
     .option("entry", {
       type: "string",
-      description: "Main typescript file, default: ${by}/index.ts",
+      description: "Main typescript file, default: ${source}/index.ts",
     })
     .option("browser", {
       default: false,
@@ -203,6 +198,7 @@ export function getConfig(argv: string[]) {
 const _conf = getConfig([]);
 
 export type Conf = typeof _conf & {
+  source: string;
   afterFork: Function;
   after: Function;
   before: Function;

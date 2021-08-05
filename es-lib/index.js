@@ -41,10 +41,6 @@ function getConfig(argv) {
     type: "boolean",
     default: false,
     description: "Log cli config at run"
-  }).option("by", {
-    type: "string",
-    default: "src",
-    description: "Source dir"
   }).option("html", {
     type: "string",
     default: "index.html",
@@ -66,7 +62,7 @@ function getConfig(argv) {
     description: "Auto copy static's files to out"
   }).option("entry", {
     type: "string",
-    description: "Main typescript file, default: ${by}/index.ts"
+    description: "Main typescript file, default: ${source}/index.ts"
   }).option("browser", {
     default: false,
     type: "boolean",
@@ -597,6 +593,10 @@ var import_fs_extra7 = __toModule(require("fs-extra"));
 var import_fs_extra5 = __toModule(require("fs-extra"));
 var import_path6 = __toModule(require("path"));
 var baseConfig = (conf) => {
+  if (!conf._ || !conf._[0]) {
+    console.log("Need input source dir, like: bike src");
+  }
+  conf.source = conf._[0];
   if (conf.gzip === void 0) {
     if (conf.watch || conf.start) {
       conf.gzip = false;
@@ -619,7 +619,7 @@ var baseConfig = (conf) => {
     conf["c8-skip-full"] = true;
   }
   if (!conf.entry) {
-    conf.entry = conf.by + "/index.ts";
+    conf.entry = conf.source + "/index.ts";
   }
   if (conf.sourcemap === void 0) {
     if (conf.watch || conf.start || conf.reporter) {
@@ -662,7 +662,7 @@ var baseConfig = (conf) => {
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
         const [src, entry] = url.split("/").filter(Boolean);
-        conf.by = src;
+        conf.source = src;
         conf.entry = src + "/" + entry;
       }
     }
@@ -801,7 +801,7 @@ async function bike(config) {
       await build();
       fork();
     };
-    watch(conf.by, reload);
+    watch(conf.source, reload);
     if (conf.test) {
       keyboard(conf, reload);
     }
@@ -843,7 +843,7 @@ var test = (config) => {
     import_fs_extra8.default.mkdirpSync(conf.out);
   }
   async function createCode() {
-    findTests(import_path8.default.resolve(cwd6, conf.by));
+    findTests(import_path8.default.resolve(cwd6, conf.source));
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {

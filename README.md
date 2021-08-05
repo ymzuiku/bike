@@ -47,26 +47,26 @@ test.it("index test", (so) => {
 Run Dev Server:
 
 ```bash
-npx bike --watch
+npx bike src --watch
 ```
 
 Build release
 
 ```bash
-npx bike
+npx bike src
 ```
 
 Run test
 
 ```bash
-npx bike --watch --test
+npx bike src --watch --test
 ```
 
 View test cover, need install c8
 
 ```bash
 npm install c8 --save-dev
-npx bike --reporter=text
+npx bike src --reporter=text
 ```
 
 ## Use CLI Options
