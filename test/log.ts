@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import chalk from "chalk";
 
 const cwd = process.cwd() + "/";

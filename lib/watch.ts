@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import chokidar from "chokidar";
 import fs from "fs-extra";
 import os from "os";

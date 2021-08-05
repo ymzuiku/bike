@@ -1,3 +1,4 @@
+/* c8 ignore start */
 export const cache = {
   done: 0,
   each: null as any as Function,

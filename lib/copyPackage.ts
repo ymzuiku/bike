@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import fs from "fs-extra";
 import { resolve } from "path";
 import type { Conf } from "./getConfig";

@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import { createSo, So } from "./so";
 import { cache } from "./cache";
 import { gray, green, logPass, red, greenBold, title } from "./log";

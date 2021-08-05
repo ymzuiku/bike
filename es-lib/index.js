@@ -172,6 +172,10 @@ function getConfig(argv) {
     alias: "x",
     type: "array",
     description: "(only-test) c8 exclude all files"
+  }).option("c8-all", {
+    type: "boolean",
+    default: true,
+    description: "(only-test) c8 all files"
   }).option("c8-config", {
     type: "string",
     description: "(only-test) c8 path to JSON configuration file"
@@ -187,7 +191,7 @@ var _conf = getConfig([]);
 
 // lib/bike.ts
 var import_esbuild = __toModule(require("esbuild"));
-var import_path7 = __toModule(require("path"));
+var import_path8 = __toModule(require("path"));
 
 // lib/getExternals.ts
 var import_fs_extra = __toModule(require("fs-extra"));
@@ -288,43 +292,62 @@ function getExternals(conf) {
 
 // lib/spawn.ts
 var import_child_process = __toModule(require("child_process"));
+var import_path2 = __toModule(require("path"));
 var lastChild = null;
+var cwd2 = process.cwd();
 function spawn(conf) {
   if (lastChild) {
     lastChild.kill(0);
     lastChild = null;
   }
   let c8 = [];
-  const c8Include = [];
+  const defaultExtension = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
+  const testFileExtensions = defaultExtension.map((extension) => extension.slice(1)).join(",");
+  const _c8Include = [];
   if (conf["c8-include"]?.length) {
     conf["c8-include"].forEach((k) => {
-      c8Include.push("--include");
-      c8Include.push(k);
+      _c8Include.push(k);
     });
   }
-  const c8Exclude = [
-    "--exclude",
-    "./coverage",
-    "--exclude",
-    "./node_modules",
-    "--exclude",
-    ".vscode"
+  const c8Include = [];
+  _c8Include.forEach((k) => {
+    c8Include.push("--include");
+    c8Include.push(k);
+  });
+  const _c8Exclude = [
+    "coverage/**",
+    "packages/*/test{,s}/**",
+    "**/*.d.ts",
+    "test{,s}/**",
+    `test{,-*}.{${testFileExtensions}}`,
+    `**/*{.,-}test.{${testFileExtensions}}`,
+    "**/__tests__/**",
+    "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
+    "**/jest.config.{js,cjs,mjs,ts}",
+    "**/{karma,rollup,webpack}.config.js",
+    "**/.{eslint,mocha}rc.{js,cjs}"
   ];
   if (conf["c8-exclude"]?.length) {
     conf["c8-exclude"].forEach((k) => {
-      c8Exclude.push("--exclude");
-      c8Exclude.push(k);
+      _c8Exclude.push(k);
     });
   }
+  const c8Exclude = [];
+  _c8Exclude.forEach((k) => {
+    c8Exclude.push("--exclude");
+    c8Exclude.push(k);
+  });
   if (conf.reporter) {
     c8 = [
       "c8",
       `-r=${conf.reporter}`,
+      "--src",
+      import_path2.default.resolve(cwd2, conf.source),
       ...c8Include,
       ...c8Exclude,
-      ...conf["c8-config"] ? ["--config", conf["c8-config"]] : [],
+      conf["c8-all"] && "--all",
       conf["c8-skip-full"] == true && "--skip-full"
-    ];
+    ].filter(Boolean);
   }
   const ls = import_child_process.default.spawn("npx", [
     ...c8,
@@ -341,21 +364,21 @@ function spawn(conf) {
 
 // lib/copyPackage.ts
 var import_fs_extra2 = __toModule(require("fs-extra"));
-var import_path2 = __toModule(require("path"));
-var cwd2 = process.cwd();
+var import_path3 = __toModule(require("path"));
+var cwd3 = process.cwd();
 function copyPackage(conf) {
-  const pkgPath = (0, import_path2.resolve)(cwd2, "package.json");
+  const pkgPath = (0, import_path3.resolve)(cwd3, "package.json");
   if (!import_fs_extra2.default.existsSync(pkgPath)) {
     return;
   }
   const pkg = require(pkgPath) || null;
   delete pkg.devDependencies;
-  import_fs_extra2.default.writeJSONSync((0, import_path2.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
+  import_fs_extra2.default.writeJSONSync((0, import_path3.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
 }
 
 // lib/worker.ts
 var import_cluster = __toModule(require("cluster"));
-var import_path3 = __toModule(require("path"));
+var import_path4 = __toModule(require("path"));
 function getMsg(msg) {
   if (!/^bike::/.test(msg)) {
     return;
@@ -385,9 +408,9 @@ var workerStart = () => {
       });
       try {
         if (/\.mjs/.test(conf.outfile)) {
-          import((0, import_path3.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
+          import((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
         } else {
-          require((0, import_path3.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
+          require((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
         }
       } catch (error) {
         console.error(error);
@@ -401,11 +424,11 @@ var workerStart = () => {
 var import_readline = __toModule(require("readline"));
 var import_cluster2 = __toModule(require("cluster"));
 var import_chalk = __toModule(require("chalk"));
-var import_path4 = __toModule(require("path"));
+var import_path5 = __toModule(require("path"));
 var import_fs_extra3 = __toModule(require("fs-extra"));
-var cwd3 = process.cwd();
-var cacheIgnoreTestPath = (0, import_path4.resolve)(cwd3, "node_modules", ".bike.test.ignore");
-var cacheTestPath = (0, import_path4.resolve)(cwd3, "node_modules", ".bike.test.json");
+var cwd4 = process.cwd();
+var cacheIgnoreTestPath = (0, import_path5.resolve)(cwd4, "node_modules", ".bike.test.ignore");
+var cacheTestPath = (0, import_path5.resolve)(cwd4, "node_modules", ".bike.test.json");
 function parse() {
   return import_fs_extra3.default.readJSONSync(cacheTestPath);
 }
@@ -467,18 +490,18 @@ var keyboard = (conf, reload) => {
 var import_fastify = __toModule(require("fastify"));
 var import_fastify_websocket = __toModule(require("fastify-websocket"));
 var import_fs_extra4 = __toModule(require("fs-extra"));
-var import_path5 = __toModule(require("path"));
+var import_path6 = __toModule(require("path"));
 var import_fastify_http_proxy = __toModule(require("fastify-http-proxy"));
 var import_fastify_static = __toModule(require("fastify-static"));
 var import_fastify_compress = __toModule(require("fastify-compress"));
 var import_crypto = __toModule(require("crypto"));
-var cwd4 = process.cwd();
+var cwd5 = process.cwd();
 var wsList = new Set();
 var serve = (conf) => {
   if (!conf.watch) {
     return;
   }
-  const htmlPath = (0, import_path5.resolve)(conf.out, "index.html");
+  const htmlPath = (0, import_path6.resolve)(conf.out, "index.html");
   const { gzip, host, port, proxy } = conf;
   const publicPrefix = conf["path-prefix"];
   const app = (0, import_fastify.fastify)();
@@ -498,7 +521,7 @@ var serve = (conf) => {
     app.register(import_fastify_compress.default, { global: true });
   }
   app.register(import_fastify_static.default, {
-    root: (0, import_path5.resolve)(cwd4, conf.out),
+    root: (0, import_path6.resolve)(cwd5, conf.out),
     prefix: publicPrefix
   });
   app.register(import_fastify_websocket.default);
@@ -520,11 +543,11 @@ var serve = (conf) => {
   });
 };
 var releaseBrowser = (conf) => {
-  const indexJS = import_fs_extra4.default.readFileSync((0, import_path5.resolve)(conf.out, "index.js"));
+  const indexJS = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf.out, "index.js"));
   const key = (0, import_crypto.createHmac)("sha256", "bike").update(indexJS).digest("hex").slice(5, 13);
-  import_fs_extra4.default.renameSync((0, import_path5.resolve)(conf.out, "index.js"), (0, import_path5.resolve)(conf.out, `index-${key}.js`));
+  import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf.out, "index.js"), (0, import_path6.resolve)(conf.out, `index-${key}.js`));
   const _html = conf["html-text"].replace("/index.js?bike=1", `"/index-${key}.js"`);
-  import_fs_extra4.default.writeFileSync((0, import_path5.resolve)(conf.out, "index.html"), _html);
+  import_fs_extra4.default.writeFileSync((0, import_path6.resolve)(conf.out, "index.html"), _html);
 };
 var keep = null;
 var onBuilded = (conf) => {
@@ -592,7 +615,7 @@ var import_fs_extra7 = __toModule(require("fs-extra"));
 
 // lib/baseConfig.ts
 var import_fs_extra5 = __toModule(require("fs-extra"));
-var import_path6 = __toModule(require("path"));
+var import_path7 = __toModule(require("path"));
 var baseConfig = (conf) => {
   if (!conf._ || !conf._[0]) {
     console.log("Need input source dir, like: bike src");
@@ -655,7 +678,7 @@ var baseConfig = (conf) => {
     }
   };
   if (conf.browser) {
-    const htmlPath = (0, import_path6.resolve)(process.cwd(), "index.html");
+    const htmlPath = (0, import_path7.resolve)(process.cwd(), "index.html");
     const html = import_fs_extra5.default.readFileSync(htmlPath, "utf8");
     const match = html.match(/src="(.*?).(ts|tsx)"/);
     if (match && match[0]) {
@@ -712,29 +735,29 @@ var watch = (uri, event2, timeout = 65) => {
 };
 
 // lib/bike.ts
-var cwd5 = process.cwd();
+var cwd6 = process.cwd();
 async function bike(config) {
   const conf = baseConfig(config);
   if (workerStart()) {
     return;
   }
-  if (!import_fs_extra7.default.existsSync((0, import_path7.resolve)(cwd5, conf.out))) {
-    import_fs_extra7.default.mkdirSync((0, import_path7.resolve)(cwd5, conf.out));
+  if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf.out))) {
+    import_fs_extra7.default.mkdirSync((0, import_path8.resolve)(cwd6, conf.out));
   }
   const copyFiles = new Set([conf.browser && ".env", ...conf.copy || []].filter(Boolean));
   copyFiles.forEach((file) => {
-    const p = (0, import_path7.resolve)(cwd5, file);
+    const p = (0, import_path8.resolve)(cwd6, file);
     if (import_fs_extra7.default.existsSync(p)) {
-      import_fs_extra7.default.copyFileSync(p, (0, import_path7.resolve)(cwd5, conf.out, file));
+      import_fs_extra7.default.copyFileSync(p, (0, import_path8.resolve)(cwd6, conf.out, file));
     }
   });
   copyPackage(conf);
-  const staticPath = (0, import_path7.resolve)(cwd5, conf.static);
+  const staticPath = (0, import_path8.resolve)(cwd6, conf.static);
   if (import_fs_extra7.default.existsSync(staticPath)) {
-    import_fs_extra7.default.copySync(staticPath, (0, import_path7.resolve)(cwd5, conf.out));
+    import_fs_extra7.default.copySync(staticPath, (0, import_path8.resolve)(cwd6, conf.out));
   }
   if (conf.browser) {
-    const htmlPath = (0, import_path7.resolve)(cwd5, conf.out, "index.html");
+    const htmlPath = (0, import_path8.resolve)(cwd6, conf.out, "index.html");
     import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
   }
   if (conf.browser) {
@@ -758,7 +781,7 @@ async function bike(config) {
     }
   }
   const esbuildOptions = {
-    entryPoints: [(0, import_path7.resolve)(cwd5, conf.entry)],
+    entryPoints: [(0, import_path8.resolve)(cwd6, conf.entry)],
     bundle: conf.bundle,
     target: conf.target || ["node16", "es6"],
     minify: conf.minify,
@@ -810,15 +833,15 @@ async function bike(config) {
 }
 
 // lib/test.ts
-var import_path8 = __toModule(require("path"));
+var import_path9 = __toModule(require("path"));
 var import_fs_extra8 = __toModule(require("fs-extra"));
-var cwd6 = process.cwd();
+var cwd7 = process.cwd();
 var test = (config) => {
   if (!config.watch) {
     config.start = true;
   }
   const conf = baseConfig(config);
-  conf.entry = import_path8.default.resolve(conf.out, "bike.temp.ts");
+  conf.entry = import_path9.default.resolve(conf.out, "bike.temp.ts");
   const files = [];
   let waitGroup = 0;
   const reg = new RegExp(conf.match);
@@ -827,7 +850,7 @@ var test = (config) => {
     import_fs_extra8.default.readdir(dir).then((list) => {
       list.forEach((file) => {
         waitGroup += 1;
-        const p = import_path8.default.resolve(dir, file);
+        const p = import_path9.default.resolve(dir, file);
         import_fs_extra8.default.stat(p).then((stat) => {
           if (stat.isDirectory()) {
             findTests(p);
@@ -844,7 +867,7 @@ var test = (config) => {
     import_fs_extra8.default.mkdirpSync(conf.out);
   }
   async function createCode() {
-    findTests(import_path8.default.resolve(cwd6, conf.source));
+    findTests(import_path9.default.resolve(cwd7, conf.source));
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {
@@ -854,11 +877,12 @@ var test = (config) => {
       }, 20);
     });
     const code = files.map((file) => {
-      file = import_path8.default.relative(import_path8.default.join(cwd6, conf.out), file);
+      file = import_path9.default.relative(import_path9.default.join(cwd7, conf.out), file);
       file = file.replace(/\.(ts|tsx|js|jsx)/, "");
       return `import("${file}");`;
     }).join("\n");
-    await import_fs_extra8.default.writeFile(conf.entry, `// THIS FILE IS AUTO GENERATE, DON'T EDIT.
+    await import_fs_extra8.default.writeFile(conf.entry, `/* c8 ignore start */
+// THIS FILE IS AUTO GENERATE, DON'T EDIT.
 // tslint:disable
 /* eslint-disable */
 const g:any = global;

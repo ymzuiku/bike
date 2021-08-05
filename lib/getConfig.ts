@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -179,6 +180,11 @@ export function getConfig(argv: string[]) {
       alias: "x",
       type: "array",
       description: "(only-test) c8 exclude all files",
+    })
+    .option("c8-all", {
+      type: "boolean",
+      default: true,
+      description: "(only-test) c8 all files",
     })
     .option("c8-config", {
       type: "string",

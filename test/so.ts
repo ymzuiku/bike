@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import eq from "fast-deep-equal";
 import { cache } from "./cache";
 import { logFail } from "./log";

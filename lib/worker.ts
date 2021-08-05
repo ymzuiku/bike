@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import cluster from "cluster";
 import { resolve } from "path";
 import type { Conf } from "./getConfig";
@@ -27,7 +28,7 @@ export const workerStart = () => {
       if (!msg) {
         return;
       }
-      const conf = JSON.parse(msg);
+      const conf = JSON.parse(msg) as Conf;
       // 监听Promise没有被捕获的失败函数
       process.on("unhandledRejection", function (err, promise) {
         console.error("[bike]", err);

@@ -7,7 +7,7 @@ Use cluster auto fork code at file save;
 ## Install
 
 ```bash
-npm install --save-dev bike c8
+npm install --save-dev bike
 ```
 
 ## Simple Example
@@ -65,7 +65,7 @@ npx bike src --watch --test
 View test cover, need install c8
 
 ```bash
-npm install c8 --save-dev
+npm i -g c8
 npx bike src --reporter=text
 ```
 

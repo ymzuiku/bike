@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import readline from "readline";
 import cluster from "cluster";
 import chalk from "chalk";

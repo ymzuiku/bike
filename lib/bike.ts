@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import esbuild from "esbuild";
 import { resolve } from "path";
 import { getExternals } from "./getExternals";

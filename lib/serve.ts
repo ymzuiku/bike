@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import { fastify } from "fastify";
 import fastifyWs from "fastify-websocket";
 import fs from "fs-extra";

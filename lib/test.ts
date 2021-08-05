@@ -59,7 +59,8 @@ export const test = (config: Partial<Conf>) => {
       .join("\n");
     await fs.writeFile(
       conf.entry!,
-      `// THIS FILE IS AUTO GENERATE, DON'T EDIT.
+      `/* c8 ignore start */
+// THIS FILE IS AUTO GENERATE, DON'T EDIT.
 // tslint:disable
 /* eslint-disable */
 const g:any = global;
