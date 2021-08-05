@@ -1,6 +1,6 @@
 {
   "name": "bike",
-  "version": "0.6.3-beta.2",
+  "version": "0.6.6",
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "scripts": {

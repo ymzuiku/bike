@@ -41,7 +41,7 @@ export const test = (config: Partial<Conf>) => {
   }
 
   async function createCode() {
-    findTests(path.resolve(cwd, conf.src));
+    findTests(path.resolve(cwd, conf.by));
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {

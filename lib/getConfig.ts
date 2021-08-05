@@ -12,7 +12,7 @@ export function getConfig(argv: string[]) {
       default: false,
       description: "Log cli config at run",
     })
-    .option("src", {
+    .option("by", {
       type: "string",
       default: "src",
       description: "Source dir",
@@ -43,7 +43,7 @@ export function getConfig(argv: string[]) {
     })
     .option("entry", {
       type: "string",
-      description: "Main typescript file, default: ${src}/index.ts",
+      description: "Main typescript file, default: ${by}/index.ts",
     })
     .option("browser", {
       default: false,

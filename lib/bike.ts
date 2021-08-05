@@ -118,7 +118,7 @@ export async function bike(config: Partial<Conf>) {
       await build();
       fork();
     };
-    watch(conf.src, reload);
+    watch(conf.by, reload);
     if (conf.test) {
       keyboard(conf, reload);
     }

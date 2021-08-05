@@ -78,7 +78,7 @@ Options:
       --version       Show version number                              [boolean]
       --argv          Backup all argv                                    [array]
       --log-config    Log cli config at run           [boolean] [default: false]
-      --src           Source dir                       [string] [default: "src"]
+      --by            Source dir                       [string] [default: "src"]
       --html          Use base html When type is browser
                                                 [string] [default: "index.html"]
       --html-text     Use html-text replace html          [string] [default: ""]
@@ -87,7 +87,7 @@ Options:
       --outfile       Build out dir index name    [string] [default: "index.js"]
       --static        Auto copy static's files to out
                                                     [string] [default: "static"]
-      --entry         Main typescript file, default: ${src}/index.ts    [string]
+      --entry         Main typescript file, default: ${by}/index.ts     [string]
       --browser       Use Browser build types         [boolean] [default: false]
       --spawn         Use child_process.spawn replace cluster.fork
                                                       [boolean] [default: false]

@@ -41,7 +41,7 @@ function getConfig(argv) {
     type: "boolean",
     default: false,
     description: "Log cli config at run"
-  }).option("src", {
+  }).option("by", {
     type: "string",
     default: "src",
     description: "Source dir"
@@ -66,7 +66,7 @@ function getConfig(argv) {
     description: "Auto copy static's files to out"
   }).option("entry", {
     type: "string",
-    description: "Main typescript file, default: ${src}/index.ts"
+    description: "Main typescript file, default: ${by}/index.ts"
   }).option("browser", {
     default: false,
     type: "boolean",
@@ -619,7 +619,7 @@ var baseConfig = (conf) => {
     conf["c8-skip-full"] = true;
   }
   if (!conf.entry) {
-    conf.entry = conf.src + "/index.ts";
+    conf.entry = conf.by + "/index.ts";
   }
   if (conf.sourcemap === void 0) {
     if (conf.watch || conf.start || conf.reporter) {
@@ -662,7 +662,7 @@ var baseConfig = (conf) => {
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
         const [src, entry] = url.split("/").filter(Boolean);
-        conf.src = src;
+        conf.by = src;
         conf.entry = src + "/" + entry;
       }
     }
@@ -801,7 +801,7 @@ async function bike(config) {
       await build();
       fork();
     };
-    watch(conf.src, reload);
+    watch(conf.by, reload);
     if (conf.test) {
       keyboard(conf, reload);
     }
@@ -843,7 +843,7 @@ var test = (config) => {
     import_fs_extra8.default.mkdirpSync(conf.out);
   }
   async function createCode() {
-    findTests(import_path8.default.resolve(cwd6, conf.src));
+    findTests(import_path8.default.resolve(cwd6, conf.by));
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {

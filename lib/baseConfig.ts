@@ -29,7 +29,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
   }
 
   if (!conf.entry) {
-    conf.entry = conf.src + "/index.ts";
+    conf.entry = conf.by + "/index.ts";
   }
 
   if (conf.sourcemap === undefined) {
@@ -77,7 +77,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
         const [src, entry] = url.split("/").filter(Boolean);
-        conf.src = src;
+        conf.by = src;
         conf.entry = src + "/" + entry;
       }
     }
