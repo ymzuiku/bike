@@ -67,7 +67,7 @@ const nums: { [key: string]: number } = {
   "0": 10,
 };
 
-export const keyboard = (conf: Conf) => {
+export const keyboard = (conf: Conf, reload: Function) => {
   if (cluster.isWorker) {
     return;
   }
@@ -82,8 +82,10 @@ export const keyboard = (conf: Conf) => {
       process.exit();
     } else if (key.name === "a") {
       event.all();
+      reload();
     } else if (nums[key.name]) {
       event.focus(nums[key.name] - 1);
+      reload();
     }
   });
 };

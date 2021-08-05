@@ -447,7 +447,7 @@ var nums = {
   "9": 9,
   "0": 10
 };
-var keyboard = (conf) => {
+var keyboard = (conf, reload) => {
   if (import_cluster2.default.isWorker) {
     return;
   }
@@ -462,8 +462,10 @@ var keyboard = (conf) => {
       process.exit();
     } else if (key.name === "a") {
       event.all();
+      reload();
     } else if (nums[key.name]) {
       event.focus(nums[key.name] - 1);
+      reload();
     }
   });
 };
@@ -593,7 +595,7 @@ var devHot = `(function () {
 })();`;
 
 // lib/bike.ts
-var import_fs_extra6 = __toModule(require("fs-extra"));
+var import_fs_extra7 = __toModule(require("fs-extra"));
 
 // lib/baseConfig.ts
 var import_fs_extra5 = __toModule(require("fs-extra"));
@@ -685,6 +687,33 @@ var baseConfig = (conf) => {
   return conf;
 };
 
+// lib/watch.ts
+var import_chokidar = __toModule(require("chokidar"));
+var import_fs_extra6 = __toModule(require("fs-extra"));
+var import_os = __toModule(require("os"));
+var watch = (uri, event2, timeout = 65) => {
+  let lock = false;
+  const fn = async () => {
+    if (lock) {
+      return;
+    }
+    lock = true;
+    await Promise.resolve(event2());
+    setTimeout(() => {
+      lock = false;
+    }, timeout);
+  };
+  if (/(darwin|window)/.test(import_os.default.type().toLowerCase())) {
+    if (import_fs_extra6.default.statSync(uri).isDirectory()) {
+      import_fs_extra6.default.watch(uri, { recursive: true }, fn);
+    } else {
+      import_fs_extra6.default.watchFile(uri, fn);
+    }
+  } else {
+    import_chokidar.default.watch(uri).on("all", fn);
+  }
+};
+
 // lib/bike.ts
 var cwd5 = process.cwd();
 async function bike(config) {
@@ -692,27 +721,24 @@ async function bike(config) {
   if (workerStart()) {
     return;
   }
-  if (conf.test && conf.watch) {
-    keyboard(conf);
-  }
-  if (!import_fs_extra6.default.existsSync((0, import_path7.resolve)(cwd5, conf.out))) {
-    import_fs_extra6.default.mkdirSync((0, import_path7.resolve)(cwd5, conf.out));
+  if (!import_fs_extra7.default.existsSync((0, import_path7.resolve)(cwd5, conf.out))) {
+    import_fs_extra7.default.mkdirSync((0, import_path7.resolve)(cwd5, conf.out));
   }
   const copyFiles = new Set([conf.browser && ".env", ...conf.copy || []].filter(Boolean));
   copyFiles.forEach((file) => {
     const p = (0, import_path7.resolve)(cwd5, file);
-    if (import_fs_extra6.default.existsSync(p)) {
-      import_fs_extra6.default.copyFileSync(p, (0, import_path7.resolve)(cwd5, conf.out, file));
+    if (import_fs_extra7.default.existsSync(p)) {
+      import_fs_extra7.default.copyFileSync(p, (0, import_path7.resolve)(cwd5, conf.out, file));
     }
   });
   copyPackage(conf);
   const staticPath = (0, import_path7.resolve)(cwd5, conf.static);
-  if (import_fs_extra6.default.existsSync(staticPath)) {
-    import_fs_extra6.default.copySync(staticPath, (0, import_path7.resolve)(cwd5, conf.out));
+  if (import_fs_extra7.default.existsSync(staticPath)) {
+    import_fs_extra7.default.copySync(staticPath, (0, import_path7.resolve)(cwd5, conf.out));
   }
   if (conf.browser) {
     const htmlPath = (0, import_path7.resolve)(cwd5, conf.out, "index.html");
-    import_fs_extra6.default.writeFileSync(htmlPath, conf["html-text"]);
+    import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
   }
   if (conf.browser) {
     serve(conf);
@@ -775,48 +801,24 @@ async function bike(config) {
     fork();
   } else if (conf.watch) {
     fork();
-    let lock = false;
-    import_fs_extra6.default.watch(conf.src, { recursive: true }, async () => {
-      if (lock) {
-        return;
-      }
-      lock = true;
+    const reload = async () => {
       await build();
       fork();
-      setTimeout(() => {
-        lock = false;
-      }, 65);
-    });
-    if (!conf.all) {
-      if (!import_fs_extra6.default.existsSync(cacheTestPath)) {
-        import_fs_extra6.default.writeFileSync(cacheTestPath, "{}");
-      }
-      import_fs_extra6.default.watch(cacheTestPath, async () => {
-        if (import_fs_extra6.default.existsSync(cacheIgnoreTestPath)) {
-          import_fs_extra6.default.rmSync(cacheIgnoreTestPath);
-          return;
-        }
-        if (lock) {
-          return;
-        }
-        lock = true;
-        await build();
-        fork();
-        setTimeout(() => {
-          lock = false;
-        }, 65);
-      });
+    };
+    watch(conf.src, reload);
+    if (conf.test) {
+      keyboard(conf, reload);
     }
   }
 }
 
 // lib/test.ts
 var import_path8 = __toModule(require("path"));
-var import_fs_extra7 = __toModule(require("fs-extra"));
+var import_fs_extra8 = __toModule(require("fs-extra"));
 var cwd6 = process.cwd();
 var test = (config) => {
   const conf = baseConfig(config);
-  conf.entry = (0, import_path8.resolve)(conf.out, "__bike__.ts");
+  conf.entry = import_path8.default.resolve(conf.out, "bike.temp.ts");
   if (!conf.watch) {
     conf.start = true;
   }
@@ -825,11 +827,11 @@ var test = (config) => {
   const reg = new RegExp(conf.match);
   function findTests(dir) {
     waitGroup += 1;
-    import_fs_extra7.default.readdir(dir).then((list) => {
+    import_fs_extra8.default.readdir(dir).then((list) => {
       list.forEach((file) => {
         waitGroup += 1;
-        const p = (0, import_path8.resolve)(dir, file);
-        import_fs_extra7.default.stat(p).then((stat) => {
+        const p = import_path8.default.resolve(dir, file);
+        import_fs_extra8.default.stat(p).then((stat) => {
           if (stat.isDirectory()) {
             findTests(p);
           } else if (reg.test(file)) {
@@ -841,11 +843,11 @@ var test = (config) => {
       waitGroup -= 1;
     });
   }
-  if (!import_fs_extra7.default.existsSync(conf.out)) {
-    import_fs_extra7.default.mkdirpSync(conf.out);
+  if (!import_fs_extra8.default.existsSync(conf.out)) {
+    import_fs_extra8.default.mkdirpSync(conf.out);
   }
   async function createCode() {
-    findTests((0, import_path8.resolve)(cwd6, conf.src));
+    findTests(import_path8.default.resolve(cwd6, conf.src));
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {
@@ -854,15 +856,17 @@ var test = (config) => {
         }
       }, 20);
     });
-    const code = files.map((file) => `import("${file.replace(/\.(ts|tsx|js|jsx)/, "")}");`).join("\n");
-    await import_fs_extra7.default.writeFile(conf.entry, `global.bikeConf = ${JSON.stringify(conf)};
+    const code = files.map((file) => {
+      file = import_path8.default.relative(import_path8.default.join(cwd6, conf.out), file);
+      file = file.replace(/\.(ts|tsx|js|jsx)/, "");
+      return `import("${file}");`;
+    }).join("\n");
+    await import_fs_extra8.default.writeFile(conf.entry, `global.bikeConf = ${JSON.stringify(conf)};
 const { JSDOM } = require("jsdom");
 const win = new JSDOM("", { pretendToBeVisual: true }).window;
 global.window = win;
 global.document = win.document;
 global.fetch = require("node-fetch");
-import { test } from "bike/test";
-global.test = test;
 ${code}
 `);
   }

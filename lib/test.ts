@@ -1,4 +1,4 @@
-import { resolve } from "path";
+import path from "path";
 import fs from "fs-extra";
 import { bike } from "./bike";
 import type { Conf } from "./getConfig";
@@ -8,7 +8,7 @@ const cwd = process.cwd();
 
 export const test = (config: Partial<Conf>) => {
   const conf = baseConfig(config);
-  conf.entry = resolve(conf.out!, "__bike__.ts");
+  conf.entry = path.resolve(conf.out!, "bike.temp.ts");
   if (!conf.watch) {
     conf.start = true;
   }
@@ -22,7 +22,7 @@ export const test = (config: Partial<Conf>) => {
     fs.readdir(dir).then((list) => {
       list.forEach((file) => {
         waitGroup += 1;
-        const p = resolve(dir, file);
+        const p = path.resolve(dir, file);
         fs.stat(p).then((stat) => {
           if (stat.isDirectory()) {
             findTests(p);
@@ -41,7 +41,7 @@ export const test = (config: Partial<Conf>) => {
   }
 
   async function createCode() {
-    findTests(resolve(cwd, conf.src));
+    findTests(path.resolve(cwd, conf.src));
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {
@@ -51,7 +51,11 @@ export const test = (config: Partial<Conf>) => {
       }, 20);
     });
     const code = files
-      .map((file) => `import("${file.replace(/\.(ts|tsx|js|jsx)/, "")}");`)
+      .map((file) => {
+        file = path.relative(path.join(cwd, conf.out!), file);
+        file = file.replace(/\.(ts|tsx|js|jsx)/, "");
+        return `import("${file}");`;
+      })
       .join("\n");
     await fs.writeFile(
       conf.entry!,
@@ -61,8 +65,6 @@ const win = new JSDOM("", { pretendToBeVisual: true }).window;
 global.window = win;
 global.document = win.document;
 global.fetch = require("node-fetch");
-import { test } from "bike/test";
-global.test = test;
 ${code}
 `
     );

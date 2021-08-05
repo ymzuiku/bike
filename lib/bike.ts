@@ -9,6 +9,7 @@ import { keyboard, cacheTestPath, cacheIgnoreTestPath } from "./keyboard";
 import { serve, onBuilded, releaseBrowser } from "./serve";
 import fs from "fs-extra";
 import { baseConfig } from "./baseConfig";
+import { watch } from "./watch";
 
 const cwd = process.cwd();
 
@@ -16,9 +17,6 @@ export async function bike(config: Partial<Conf>) {
   const conf = baseConfig(config);
   if (workerStart()) {
     return;
-  }
-  if (conf.test && conf.watch) {
-    keyboard(conf);
   }
   if (!fs.existsSync(resolve(cwd, conf.out!))) {
     fs.mkdirSync(resolve(cwd, conf.out!));
@@ -79,9 +77,6 @@ export async function bike(config: Partial<Conf>) {
     platform: conf.platform,
     splitting: conf.splitting,
     format: conf.format,
-    // jsx: conf.jsx,
-    // jsxFactory: conf["jsx-factory"],
-    // jsxFragment: conf["jsx-fragment"],
     external,
     outdir: conf.splitting ? conf.out : undefined,
     outfile: conf.splitting ? undefined : conf.out + "/" + conf.outfile,
@@ -119,39 +114,13 @@ export async function bike(config: Partial<Conf>) {
     fork();
   } else if (conf.watch) {
     fork();
-    let lock = false;
-    fs.watch(conf.src, { recursive: true }, async () => {
-      if (lock) {
-        return;
-      }
-      lock = true;
+    const reload = async () => {
       await build();
       fork();
-      setTimeout(() => {
-        lock = false;
-      }, 65);
-    });
-
-    // 若不是测试所有，监听测试配置文件的修改
-    if (!conf.all) {
-      if (!fs.existsSync(cacheTestPath)) {
-        fs.writeFileSync(cacheTestPath, "{}");
-      }
-      fs.watch(cacheTestPath, async () => {
-        if (fs.existsSync(cacheIgnoreTestPath)) {
-          fs.rmSync(cacheIgnoreTestPath);
-          return;
-        }
-        if (lock) {
-          return;
-        }
-        lock = true;
-        await build();
-        fork();
-        setTimeout(() => {
-          lock = false;
-        }, 65);
-      });
+    };
+    watch(conf.src, reload);
+    if (conf.test) {
+      keyboard(conf, reload);
     }
   }
 }
