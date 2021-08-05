@@ -77,6 +77,20 @@ function createSo(name) {
         logFail(name, cache.errors[name].stack);
       }
     },
+    reg: (a, regex) => {
+      if (regex.test(a)) {
+        return;
+      }
+      cache.errors[name] = new Error(`${a} isn't regexp: ${regex}`);
+      logFail(name, cache.errors[name].stack);
+    },
+    notReg: (a, regex) => {
+      if (!regex.test(a)) {
+        return;
+      }
+      cache.errors[name] = new Error(`${a} is regexp: ${regex}`);
+      logFail(name, cache.errors[name].stack);
+    },
     notPick: (a, ...b) => {
       let isPick = false;
       b.forEach((v) => {
@@ -132,17 +146,14 @@ function createSo(name) {
         logFail(name, cache.errors[name].stack);
       }
     },
-    error: (err, other) => {
-      if (!err && other || !other && err || !err && !other) {
-        cache.errors[name] = new Error(`${err} isn't ${other}`);
+    error: (err, regex) => {
+      if (!err) {
+        cache.errors[name] = new Error(`${err} isn't error`);
         logFail(name, cache.errors[name].stack);
         return;
       }
-      if (err.message === other.message) {
-        return;
-      }
-      if (err.message.indexOf(other.message) > -1) {
-        cache.errors[name] = new Error(`error ${err} isn't ${other}`);
+      if (regex && regex.test(err.message)) {
+        cache.errors[name] = new Error(`error ${err} isn't regex ${regex}`);
         logFail(name, cache.errors[name].stack);
       }
     },

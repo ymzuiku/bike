@@ -16,6 +16,20 @@ export function createSo(name: string) {
         logFail(name, cache.errors[name].stack!);
       }
     },
+    reg: (a: string, regex: RegExp) => {
+      if (regex.test(a)) {
+        return;
+      }
+      cache.errors[name] = new Error(`${a} isn't regexp: ${regex}`);
+      logFail(name, cache.errors[name].stack!);
+    },
+    notReg: (a: string, regex: RegExp) => {
+      if (!regex.test(a)) {
+        return;
+      }
+      cache.errors[name] = new Error(`${a} is regexp: ${regex}`);
+      logFail(name, cache.errors[name].stack!);
+    },
     notPick: (a: any, ...b: any[]) => {
       let isPick = false;
       b.forEach((v) => {
@@ -71,19 +85,15 @@ export function createSo(name: string) {
         logFail(name, cache.errors[name].stack!);
       }
     },
-    error: (err?: Error | null, other?: Error | null) => {
-      if ((!err && other) || (!other && err) || (!err && !other)) {
-        cache.errors[name] = new Error(`${err} isn't ${other}`);
+    error: (err?: Error | null, regex?: RegExp) => {
+      if (!err) {
+        cache.errors[name] = new Error(`${err} isn't error`);
         logFail(name, cache.errors[name].stack!);
         return;
       }
 
-      if (err!.message === other!.message) {
-        return;
-      }
-
-      if (err!.message.indexOf(other!.message) > -1) {
-        cache.errors[name] = new Error(`error ${err} isn't ${other}`);
+      if (regex && regex.test(err.message)) {
+        cache.errors[name] = new Error(`error ${err} isn't regex ${regex}`);
         logFail(name, cache.errors[name].stack!);
       }
     },

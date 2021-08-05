@@ -7,11 +7,11 @@ import { baseConfig } from "./baseConfig";
 const cwd = process.cwd();
 
 export const test = (config: Partial<Conf>) => {
+  if (!config.watch) {
+    config.start = true;
+  }
   const conf = baseConfig(config);
   conf.entry = path.resolve(conf.out!, "bike.temp.ts");
-  if (!conf.watch) {
-    conf.start = true;
-  }
 
   const files: string[] = [];
   let waitGroup = 0;

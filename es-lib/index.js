@@ -813,11 +813,11 @@ var import_path8 = __toModule(require("path"));
 var import_fs_extra8 = __toModule(require("fs-extra"));
 var cwd6 = process.cwd();
 var test = (config) => {
+  if (!config.watch) {
+    config.start = true;
+  }
   const conf = baseConfig(config);
   conf.entry = import_path8.default.resolve(conf.out, "bike.temp.ts");
-  if (!conf.watch) {
-    conf.start = true;
-  }
   const files = [];
   let waitGroup = 0;
   const reg = new RegExp(conf.match);
