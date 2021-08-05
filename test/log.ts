@@ -2,6 +2,7 @@ import chalk from "chalk";
 
 const cwd = process.cwd() + "/";
 const cwdReg = new RegExp(cwd + ".*(.ts)");
+const nodeModulesReg = new RegExp("node_modules");
 
 export const gray = (str: string) => chalk.gray(str);
 export const title = (str: string) => chalk.bold.white(str);
@@ -19,6 +20,9 @@ export function logFail(name: string, stack: string) {
         const [_, ...rest] = code.split("Error: ");
         code = rest.join("Error: ");
         console.log(red(code));
+      }
+      if (nodeModulesReg.test(code)) {
+        return;
       }
       if (cwdReg.test(code)) {
         console.log(gray(`${code.split(cwd)[1]}`));

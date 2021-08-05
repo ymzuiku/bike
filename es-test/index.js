@@ -44,6 +44,7 @@ var cache = {
 var import_chalk = __toModule(require("chalk"));
 var cwd = process.cwd() + "/";
 var cwdReg = new RegExp(cwd + ".*(.ts)");
+var nodeModulesReg = new RegExp("node_modules");
 var gray = (str) => import_chalk.default.gray(str);
 var title = (str) => import_chalk.default.bold.white(str);
 var green = (str) => import_chalk.default.green(str);
@@ -55,6 +56,9 @@ function logFail(name, stack) {
       const [_, ...rest] = code.split("Error: ");
       code = rest.join("Error: ");
       console.log(red(code));
+    }
+    if (nodeModulesReg.test(code)) {
+      return;
     }
     if (cwdReg.test(code)) {
       console.log(gray(`${code.split(cwd)[1]}`));
