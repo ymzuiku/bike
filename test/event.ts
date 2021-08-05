@@ -4,7 +4,14 @@ const cwd = process.cwd();
 const cacheIgnoreTestPath = resolve(cwd, "node_modules", ".bike.test.ignore");
 const cacheTestPath = resolve(cwd, "node_modules", ".bike.test.json");
 
-function parse() {
+interface CacheObj {
+  focus: string[];
+  fails: string[];
+  all: string[];
+  doing: string[];
+}
+
+function parse(): CacheObj {
   const obj = fs.readJSONSync(cacheTestPath);
   if (!obj.focus) {
     obj.focus = [];
@@ -21,12 +28,7 @@ function parse() {
   return obj;
 }
 
-function saveFile(obj: {
-  focus: string[];
-  fails: string[];
-  all: string[];
-  doing: string[];
-}) {
+function saveFile(obj: CacheObj) {
   fs.writeFileSync(cacheIgnoreTestPath, "ignore");
   fs.writeJSONSync(cacheTestPath, obj, { spaces: 2 });
 }
@@ -35,9 +37,9 @@ export const event = {
   // 读取文件,并且返回这次需要执行的任务
   load: (it: string[]) => {
     if (!fs.existsSync(cacheTestPath)) {
-      const empty = { focus: [], fails: [], all: [], doing: [] };
+      const empty = { focus: [], fails: [], all: it, doing: [] };
       saveFile(empty);
-      return empty;
+      return it;
     }
     const { focus, fails, all, doing } = parse();
     if (all.length === 0) {
@@ -45,7 +47,7 @@ export const event = {
     }
     // 若有需要匹配的，返回匹配内容
     if (focus.length) {
-      const temp = [];
+      const temp: string[] = [];
       focus.forEach((str) => {
         if (str[0] === "/" && str[str.length - 1] === "/") {
           const reg = new RegExp(str);

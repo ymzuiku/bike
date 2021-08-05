@@ -59,12 +59,16 @@ export const test = (config: Partial<Conf>) => {
       .join("\n");
     await fs.writeFile(
       conf.entry!,
-      `global.bikeConf = ${JSON.stringify(conf)};
+      `// THIS FILE IS AUTO GENERATE, DON'T EDIT.
+// tslint:disable
+/* eslint-disable */
+const g:any = global;
+g.bikeConf = ${JSON.stringify(conf)};
 const { JSDOM } = require("jsdom");
 const win = new JSDOM("", { pretendToBeVisual: true }).window;
-global.window = win;
-global.document = win.document;
-global.fetch = require("node-fetch");
+g.window = win;
+g.document = win.document;
+g.fetch = require("node-fetch");
 ${code}
 `
     );

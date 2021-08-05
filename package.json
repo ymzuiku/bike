@@ -1,14 +1,16 @@
 {
   "name": "bike",
-  "version": "0.6.3-beta.1",
+  "version": "0.6.3-beta.2",
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "scripts": {
-    "es": "esbuild --define:process.env.NODE_ENV=\\\"production\\\" lib/index.ts --outdir=es --target=esnext --platform=node  --bundle --external:c8 --external:chalk --external:esbuild --external:fast-deep-equal --external:fs-extra --external:source-map-support --external:tslib --external:typescript --external:fastify --external:fastify-compress --external:fastify-http-proxy --external:fastify-static --external:fastify-websocket --external:yargs --external:node-fetch --external:chokidar --external:jsdom --sourcemap"
+    "lib": "esbuild --define:process.env.NODE_ENV=\\\"production\\\" lib/index.ts --outdir=es-lib --target=esnext --platform=node  --bundle --external:c8 --external:chalk --external:esbuild --external:fast-deep-equal --external:fs-extra --external:source-map-support --external:tslib --external:typescript --external:fastify --external:fastify-compress --external:fastify-http-proxy --external:fastify-static --external:fastify-websocket --external:yargs --external:node-fetch --external:chokidar --external:jsdom --sourcemap",
+    "test": "esbuild --define:process.env.NODE_ENV=\\\"production\\\" test/index.ts --outdir=es-test --target=esnext --platform=node  --bundle --external:c8 --external:chalk --external:esbuild --external:fast-deep-equal --external:fs-extra --external:source-map-support --external:tslib --external:typescript --external:fastify --external:fastify-compress --external:fastify-http-proxy --external:fastify-static --external:fastify-websocket --external:yargs --external:node-fetch --external:chokidar --external:jsdom --sourcemap",
+    "es": "npm run lib && npm run test"
   },
   "exports": {
-    "./test": "./test/index.ts",
-    ".": "./lib/index.ts"
+    "./test": "./es-test/index.js",
+    ".": "./es-lib/index.js"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",

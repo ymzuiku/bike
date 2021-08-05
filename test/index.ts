@@ -38,7 +38,7 @@ async function runOne(key: string) {
     const errors = Object.keys(cache.errors);
     const all = Object.keys(cache.it);
     // 若是测试所有，不进行 test.config 调整
-    if (conf().all) {
+    if (!conf().all) {
       event.save(doing, errors, all);
     }
     if (errors.length === 0) {
@@ -64,9 +64,9 @@ async function runOne(key: string) {
 
 async function runTest() {
   // 读取需要测试的对象
-  let task = [];
+  let task: string[] = [];
   if (conf().focus) {
-    const reg = new RegExp(conf().focus);
+    const reg = new RegExp(conf().focus as string);
     Object.keys(cache.it).forEach((k) => {
       if (reg.test(k)) {
         task.push(k);
@@ -99,6 +99,7 @@ async function runTest() {
     );
   }
 
+  // 并行执行 runOne
   errs.forEach(runOne);
 }
 

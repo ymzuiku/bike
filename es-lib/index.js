@@ -274,10 +274,6 @@ function getExternals(conf) {
   if (pkg) {
     if (!conf.depend && pkg.dependencies) {
       const depend = getKeys(pkg.dependencies);
-      if (depend.indexOf("bike") > -1) {
-        console.error("Error: bike is in package.dependencies, Please move bike to package.devDependencies.");
-        process.exit();
-      }
       externals = [...externals, ...depend];
     }
     if (pkg.devDependencies) {
@@ -861,12 +857,16 @@ var test = (config) => {
       file = file.replace(/\.(ts|tsx|js|jsx)/, "");
       return `import("${file}");`;
     }).join("\n");
-    await import_fs_extra8.default.writeFile(conf.entry, `global.bikeConf = ${JSON.stringify(conf)};
+    await import_fs_extra8.default.writeFile(conf.entry, `// THIS FILE IS AUTO GENERATE, DON'T EDIT.
+// tslint:disable
+/* eslint-disable */
+const g:any = global;
+g.bikeConf = ${JSON.stringify(conf)};
 const { JSDOM } = require("jsdom");
 const win = new JSDOM("", { pretendToBeVisual: true }).window;
-global.window = win;
-global.document = win.document;
-global.fetch = require("node-fetch");
+g.window = win;
+g.document = win.document;
+g.fetch = require("node-fetch");
 ${code}
 `);
   }

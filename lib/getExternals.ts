@@ -32,6 +32,7 @@ function getKeys(obj: { [key: string]: string }) {
 
 export function getExternals(conf: Conf) {
   let externals = [
+    // "bike",
     "assert",
     "async_hooks",
     "buffer",
@@ -87,12 +88,12 @@ export function getExternals(conf: Conf) {
   if (pkg) {
     if (!conf.depend && pkg.dependencies) {
       const depend = getKeys(pkg.dependencies);
-      if (depend.indexOf("bike") > -1) {
-        console.error(
-          "Error: bike is in package.dependencies, Please move bike to package.devDependencies."
-        );
-        process.exit();
-      }
+      // if (depend.indexOf("bike") > -1) {
+      //   console.error(
+      //     "Error: bike is in package.dependencies, Please move bike to package.devDependencies."
+      //   );
+      //   process.exit();
+      // }
       externals = [...externals, ...depend];
     }
     if (pkg.devDependencies) {
