@@ -75,6 +75,7 @@ function getConfig(argv) {
     type: "array",
     description: "Copy other file to dist"
   }).option("minify", {
+    alias: "m",
     type: "boolean",
     description: "Esbuild minify"
   }).option("bundle", {
@@ -633,16 +634,16 @@ var baseConfig = (conf) => {
       conf.target = "esnext";
     }
   }
+  if (!conf.watch && !conf.start) {
+    if (conf.minify === void 0) {
+      conf.minify = true;
+    }
+    if (conf.sourcemap === void 0) {
+      conf.sourcemap = false;
+    }
+  }
   const brower = () => {
     conf.platform = "neutral";
-    if (!conf.watch && !conf.start) {
-      if (conf.minify === void 0) {
-        conf.minify = true;
-      }
-      if (conf.sourcemap === void 0) {
-        conf.sourcemap = false;
-      }
-    }
     if (conf.depend === void 0) {
       conf.depend = true;
     }

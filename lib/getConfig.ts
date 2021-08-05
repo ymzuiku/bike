@@ -55,6 +55,7 @@ export function getConfig(argv: string[]) {
       description: "Copy other file to dist",
     })
     .option("minify", {
+      alias: "m",
       type: "boolean",
       description: "Esbuild minify",
     })
