@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../log/index.ts"],
-  "sourcesContent": ["const cwd = process.cwd() + \"/\";\nconst cwdReg = new RegExp(cwd + \".*(.ts)\");\n\nexport function log(...args: any[]) {\n  const err = new Error(\"\");\n  let line = \"\";\n  err\n    .stack!.split(\"\\n\")\n    .reverse()\n    .forEach((code) => {\n      if (cwdReg.test(code)) {\n        line = code.split(cwd)[1].replace(/(\\(|\\))/g, \"\");\n      }\n    });\n\n  console.log(line);\n  console.log(...args);\n}\n\nexport function stack(...args: any[]) {\n  const err = new Error(\"\");\n  const logs: string[] = [];\n  err\n    .stack!.split(\"\\n\")\n    .reverse()\n    .forEach((code) => {\n      if (cwdReg.test(code)) {\n        logs.push(code.split(cwd)[1].replace(/(\\(|\\))/g, \"\"));\n      }\n    });\n\n  logs.forEach((v, i) => {\n    console.log(v);\n  });\n  console.log(...args);\n}\n"],
-  "mappings": ";;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA,IAAM,MAAM,QAAQ,QAAQ;AAC5B,IAAM,SAAS,IAAI,OAAO,MAAM;AAEzB,gBAAgB,MAAa;AAClC,QAAM,MAAM,IAAI,MAAM;AACtB,MAAI,OAAO;AACX,MACG,MAAO,MAAM,MACb,UACA,QAAQ,CAAC,SAAS;AACjB,QAAI,OAAO,KAAK,OAAO;AACrB,aAAO,KAAK,MAAM,KAAK,GAAG,QAAQ,YAAY;AAAA;AAAA;AAIpD,UAAQ,IAAI;AACZ,UAAQ,IAAI,GAAG;AAAA;AAGV,kBAAkB,MAAa;AACpC,QAAM,MAAM,IAAI,MAAM;AACtB,QAAM,OAAiB;AACvB,MACG,MAAO,MAAM,MACb,UACA,QAAQ,CAAC,SAAS;AACjB,QAAI,OAAO,KAAK,OAAO;AACrB,WAAK,KAAK,KAAK,MAAM,KAAK,GAAG,QAAQ,YAAY;AAAA;AAAA;AAIvD,OAAK,QAAQ,CAAC,GAAG,MAAM;AACrB,YAAQ,IAAI;AAAA;AAEd,UAAQ,IAAI,GAAG;AAAA;",
-  "names": []
-}

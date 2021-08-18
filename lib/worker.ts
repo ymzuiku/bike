@@ -2,6 +2,8 @@
 import cluster from "cluster";
 import { resolve } from "path";
 import type { Conf } from "./getConfig";
+import c8 from "c8";
+import { cover } from "./cover";
 
 function getMsg(msg: string) {
   if (!/^bike::/.test(msg)) {
@@ -33,6 +35,7 @@ export const workerStart = () => {
       process.on("unhandledRejection", function (err, promise) {
         console.error("[bike]", err);
       });
+      cover(conf);
       try {
         if (/\.mjs/.test(conf.outfile)) {
           import(resolve(process.cwd(), conf.out + "/" + conf.outfile));

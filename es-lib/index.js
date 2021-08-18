@@ -301,8 +301,8 @@ function spawn(conf) {
     lastChild = null;
   }
   let c8 = [];
-  const defaultExtension = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
-  const testFileExtensions = defaultExtension.map((extension) => extension.slice(1)).join(",");
+  const defaultExtension2 = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
+  const testFileExtensions2 = defaultExtension2.map((extension) => extension.slice(1)).join(",");
   const _c8Include = [];
   if (conf["c8-include"]?.length) {
     conf["c8-include"].forEach((k) => {
@@ -319,8 +319,8 @@ function spawn(conf) {
     "packages/*/test{,s}/**",
     "**/*.d.ts",
     "test{,s}/**",
-    `test{,-*}.{${testFileExtensions}}`,
-    `**/*{.,-}test.{${testFileExtensions}}`,
+    `test{,-*}.{${testFileExtensions2}}`,
+    `**/*{.,-}test.{${testFileExtensions2}}`,
     "**/__tests__/**",
     "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
     "**/jest.config.{js,cjs,mjs,ts}",
@@ -379,6 +379,34 @@ function copyPackage(conf) {
 // lib/worker.ts
 var import_cluster = __toModule(require("cluster"));
 var import_path4 = __toModule(require("path"));
+
+// lib/cover.ts
+var import_c8 = __toModule(require("c8"));
+var defaultExtension = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
+var testFileExtensions = defaultExtension.map((extension) => extension.slice(1)).join(",");
+var exclude = [
+  "coverage/**",
+  "packages/*/test{,s}/**",
+  "**/*.d.ts",
+  "test{,s}/**",
+  `test{,-*}.{${testFileExtensions}}`,
+  `**/*{.,-}test.{${testFileExtensions}}`,
+  "**/__tests__/**",
+  "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
+  "**/jest.config.{js,cjs,mjs,ts}",
+  "**/{karma,rollup,webpack}.config.js",
+  "**/.{eslint,mocha}rc.{js,cjs}"
+];
+var cover = (conf) => {
+  const report = new import_c8.Report({
+    reporter: ["text"]
+  });
+  report.run().then((v) => {
+    console.log(v);
+  });
+};
+
+// lib/worker.ts
 function getMsg(msg) {
   if (!/^bike::/.test(msg)) {
     return;
@@ -406,6 +434,7 @@ var workerStart = () => {
       process.on("unhandledRejection", function(err, promise) {
         console.error("[bike]", err);
       });
+      cover(conf);
       try {
         if (/\.mjs/.test(conf.outfile)) {
           import((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
