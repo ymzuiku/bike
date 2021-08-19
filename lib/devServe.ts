@@ -95,7 +95,7 @@ export const releaseBrowser = (conf: Conf) => {
     resolve(conf["html-out"]!, `index-${key}.js`)
   );
 
-  const _html = replaceCss(conf).replace(
+  const _html = replaceCss(conf, `index-${cssKey}.css`).replace(
     "/index.js?bike=1",
     `${urlPrefix}index-${key}.js`
   );
@@ -110,7 +110,7 @@ export const onBuilded = (conf: Conf) => {
     keep = null;
   }
 
-  replaceCss(conf);
+  replaceCss(conf, "index.css");
   reloadLog();
   keep = setTimeout(() => {
     // bs.reload();
@@ -129,16 +129,15 @@ export const onBuilded = (conf: Conf) => {
   }, 66);
 };
 
-function replaceCss(conf: Conf) {
+function replaceCss(conf: Conf, name: string) {
   const urlPrefix = conf["url-prefix"];
-  let css = "";
-  fs.readdirSync(conf["html-out"]!).forEach((file) => {
-    if (/\.(css)/.test(file)) {
-      css += `<link rel="stylesheet" href="${urlPrefix}${file}" />\n`;
-    }
-  });
+  const css = `<link rel="stylesheet" href="${urlPrefix}${name}" />\n`;
+  // fs.readdirSync(conf["html-out"]!).forEach((file) => {
+  //   if (/\.(css)/.test(file)) {
+  //     css += `<link rel="stylesheet" href="${urlPrefix}${file}" />\n`;
+  //   }
+  // });
   const _html = conf["html-text"].replace("</head>", css + "</head/>");
-
   fs.writeFileSync(resolve(conf["html-out"]!, "index.html"), _html);
   return _html;
 }

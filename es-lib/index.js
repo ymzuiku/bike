@@ -558,7 +558,7 @@ var releaseBrowser = (conf) => {
   const indexJS = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.js"));
   const key = (0, import_crypto.createHmac)("sha256", "bike").update(indexJS).digest("hex").slice(5, 13);
   import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.js"), (0, import_path6.resolve)(conf["html-out"], `index-${key}.js`));
-  const _html = replaceCss(conf).replace("/index.js?bike=1", `${urlPrefix}index-${key}.js`);
+  const _html = replaceCss(conf, `index-${cssKey}.css`).replace("/index.js?bike=1", `${urlPrefix}index-${key}.js`);
   import_fs_extra4.default.writeFileSync((0, import_path6.resolve)(conf["html-out"], "index.html"), _html);
 };
 var keep = null;
@@ -567,7 +567,7 @@ var onBuilded = (conf) => {
     clearTimeout(keep);
     keep = null;
   }
-  replaceCss(conf);
+  replaceCss(conf, "index.css");
   reloadLog();
   keep = setTimeout(() => {
     wsList.forEach((ws) => {
@@ -584,15 +584,10 @@ var onBuilded = (conf) => {
     });
   }, 66);
 };
-function replaceCss(conf) {
+function replaceCss(conf, name) {
   const urlPrefix = conf["url-prefix"];
-  let css = "";
-  import_fs_extra4.default.readdirSync(conf["html-out"]).forEach((file) => {
-    if (/\.(css)/.test(file)) {
-      css += `<link rel="stylesheet" href="${urlPrefix}${file}" />
+  const css = `<link rel="stylesheet" href="${urlPrefix}${name}" />
 `;
-    }
-  });
   const _html = conf["html-text"].replace("</head>", css + "</head/>");
   import_fs_extra4.default.writeFileSync((0, import_path6.resolve)(conf["html-out"], "index.html"), _html);
   return _html;
