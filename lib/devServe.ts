@@ -16,7 +16,7 @@ export const devServe = (conf: Conf) => {
   if (!conf.watch) {
     return;
   }
-  const htmlPath = resolve(conf.out!, "index.html");
+  const htmlPath = resolve(conf["html-out"]!, "index.html");
 
   const { gzip, host, port, proxy } = conf;
 
@@ -43,7 +43,7 @@ export const devServe = (conf: Conf) => {
   }
 
   app.register(fastifyStatic, {
-    root: resolve(cwd, conf.out!),
+    root: resolve(cwd, conf["html-out"]!),
     prefix: publicPrefix,
   });
   app.register(fastifyWs);
@@ -69,15 +69,15 @@ export const devServe = (conf: Conf) => {
 };
 
 export const releaseBrowser = (conf: Conf) => {
-  const indexJS = fs.readFileSync(resolve(conf.out!, "index.js"));
+  const indexJS = fs.readFileSync(resolve(conf["html-out"]!, "index.js"));
   const key = createHmac("sha256", "bike")
     .update(indexJS)
     .digest("hex")
     .slice(5, 13);
 
   fs.renameSync(
-    resolve(conf.out!, "index.js"),
-    resolve(conf.out!, `index-${key}.js`)
+    resolve(conf["html-out"]!, "index.js"),
+    resolve(conf["html-out"]!, `index-${key}.js`)
   );
 
   const _html = conf["html-text"].replace(
@@ -85,7 +85,7 @@ export const releaseBrowser = (conf: Conf) => {
     `"/index-${key}.js"`
   );
 
-  fs.writeFileSync(resolve(conf.out!, "index.html"), _html);
+  fs.writeFileSync(resolve(conf["html-out"]!, "index.html"), _html);
 };
 
 let keep: any = null;

@@ -4,7 +4,7 @@ import { resolve } from "path";
 import type { Conf } from "./getConfig";
 
 export const baseConfig = (conf: Partial<Conf>): Conf => {
-  if ((!conf._ || !conf._[0]) && !conf.browser) {
+  if ((!conf._ || !conf._[0]) && !conf.html) {
     console.log("Need input source dir, like: bike src");
     process.exit();
   }
@@ -24,7 +24,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
 
   if (!conf.out) {
     if (conf.test) {
-      conf.out = "dist-test";
+      conf.out = "dist/test";
     } else {
       conf.out = "dist";
     }
@@ -45,7 +45,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
   }
 
   if (conf.target === undefined) {
-    if (conf.browser) {
+    if (conf.html) {
       conf.target = "es6";
     } else {
       conf.target = "esnext";
@@ -73,7 +73,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
     }
   };
 
-  if (conf.browser) {
+  if (conf.html) {
     // 解析html
     const htmlPath = resolve(process.cwd(), "index.html");
     const html = fs.readFileSync(htmlPath, "utf8");
@@ -83,8 +83,9 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
         const [src, entry] = url.split("/").filter(Boolean);
-        conf.source = src;
-        conf.entry = src + "/" + entry;
+        conf["html-source"] = src;
+        conf["html-entry"] = src + "/" + entry;
+        conf["html-out"] = "dist/www";
       }
     }
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');

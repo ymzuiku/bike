@@ -16,49 +16,42 @@ const cwd = process.cwd();
 
 export async function bike(config: Partial<Conf>) {
   const conf = baseConfig(config);
+
   if (workerStart()) {
     return;
   }
-  if (!fs.existsSync(resolve(cwd, conf.out!))) {
-    fs.mkdirSync(resolve(cwd, conf.out!));
-  }
 
-  const copyFiles = new Set(
-    [conf.browser && ".env", ...((conf.copy as string[]) || [])].filter(
-      Boolean
-    ) as string[]
-  );
-  copyFiles.forEach((file) => {
-    const p = resolve(cwd, file);
-    if (fs.existsSync(p)) {
-      fs.copyFileSync(p, resolve(cwd, conf.out!, file));
+  if (conf.html) {
+    if (!fs.existsSync(resolve(cwd, conf["html-out"]!))) {
+      fs.mkdirpSync(resolve(cwd, conf["html-out"]!));
     }
-  });
-
-  copyPackage(conf);
-
-  const staticPath = resolve(cwd, conf.static);
-  if (fs.existsSync(staticPath)) {
-    fs.copySync(staticPath, resolve(cwd, conf.out!));
-  }
-
-  if (conf.browser) {
-    const htmlPath = resolve(cwd, conf.out!, "index.html");
+    const htmlPath = resolve(cwd, conf["html-out"]!, "index.html");
     fs.writeFileSync(htmlPath, conf["html-text"]);
+    if (conf.watch) {
+      devServe(conf);
+    }
   }
 
-  if (conf.browser) {
-    devServe(conf);
+  if (conf.source) {
+    if (!fs.existsSync(resolve(cwd, conf.out!))) {
+      fs.mkdirpSync(resolve(cwd, conf.out!));
+    }
+
+    const copyFiles = new Set(
+      [".env", ...((conf.copy as string[]) || [])].filter(Boolean) as string[]
+    );
+    copyFiles.forEach((file) => {
+      const p = resolve(cwd, file);
+      if (fs.existsSync(p)) {
+        fs.copyFileSync(p, resolve(cwd, conf.out!, file));
+      }
+    });
+    const staticPath = resolve(cwd, conf.static);
+    if (fs.existsSync(staticPath)) {
+      fs.copySync(staticPath, resolve(cwd, conf.out!));
+    }
+    copyPackage(conf);
   }
-  const fork = () => {
-    if (conf.browser) {
-      return onBuilded(conf);
-    }
-    if (conf.spawn) {
-      return spawn(conf);
-    }
-    workerFork(conf);
-  };
 
   let external = undefined;
   if (conf.bundle) {
@@ -69,61 +62,120 @@ export async function bike(config: Partial<Conf>) {
     }
   }
 
-  const esbuildOptions: any = {
-    entryPoints: [resolve(cwd, conf.entry!)],
-    bundle: conf.bundle,
-    target: conf.target || ["node16", "es6"],
-    minify: conf.minify,
-    define: conf.define,
-    platform: conf.platform,
-    splitting: conf.splitting,
-    format: conf.format,
-    external,
-    outdir: conf.splitting ? conf.out : undefined,
-    outfile: conf.splitting ? undefined : conf.out + "/" + conf.outfile,
-    sourcemap: conf.sourcemap,
-  };
+  let esbuildOptions: any;
+  let esbuildHTMLOptions: any;
+
+  if (conf.source) {
+    esbuildOptions = {
+      entryPoints: [resolve(cwd, conf.entry!)],
+      bundle: conf.bundle,
+      target: conf.target || ["node16", "es6"],
+      minify: conf.minify,
+      define: conf.define,
+      platform: conf.platform,
+      splitting: conf.splitting,
+      format: conf.format,
+      external,
+      outdir: conf.splitting ? conf.out : undefined,
+      outfile: conf.splitting ? undefined : conf.out + "/" + conf.outfile,
+      sourcemap: conf.sourcemap,
+    };
+  }
+
+  if (conf.html) {
+    esbuildHTMLOptions = {
+      entryPoints: [resolve(cwd, conf["html-entry"]!)],
+      bundle: conf.bundle,
+      // --target=chrome58,firefox57,safari11,edge16
+      target: ["chrome58", "firefox57", "safari11", "edge16"],
+      minify: conf.minify,
+      define: conf.define,
+      // platform: conf.platform,
+      splitting: conf.splitting,
+      format: conf.format,
+      external,
+      outdir: conf.splitting ? conf["html-out"] : undefined,
+      outfile: conf.splitting
+        ? undefined
+        : conf["html-out"] + "/" + conf.outfile,
+      sourcemap: conf.sourcemap,
+    };
+  }
 
   const build = async () => {
-    if (!conf.browser && (conf.watch || conf.start) && conf.clear) {
+    if ((conf.watch || conf.start) && conf.clear) {
       console.clear();
     }
     if (conf.before) {
       await Promise.resolve(conf.before(conf));
     }
-    await esbuild.build(esbuildOptions);
+    if (conf.source) {
+      await esbuild.build(esbuildOptions);
+    }
 
     if (conf.after) {
       conf.after(conf);
     }
 
     if (!conf.watch && !conf.start) {
-      if (conf.browser) {
-        releaseBrowser(conf);
+      console.log("release server done.");
+    }
+  };
+
+  const buildHTML = async () => {
+    await esbuild.build(esbuildHTMLOptions);
+
+    if (!conf.watch && !conf.start) {
+      releaseBrowser(conf);
+      console.log("release html done.");
+    }
+  };
+
+  const reload = () => {
+    if (conf.html) {
+      onBuilded(conf);
+    }
+    if (conf.source) {
+      if (conf.spawn) {
+        return spawn(conf);
       }
-      console.log("release done.");
+      workerFork(conf);
     }
   };
 
   try {
-    await build();
+    if (conf.source) {
+      await build();
+    }
+    if (conf.html) {
+      await buildHTML();
+    }
   } catch (err) {
     throw err;
   }
 
   if (conf.start) {
-    fork();
+    reload();
   } else if (conf.watch) {
-    fork();
-    const reload = async () => {
+    reload();
+    const onWatch = async () => {
       await build();
-      fork();
+      reload();
     };
-    conf.source.split(",").forEach((src) => {
-      watch(src, reload);
-    });
+    if (conf.source) {
+      conf.source.split(",").forEach((src) => {
+        watch(src, onWatch);
+      });
+    }
+
+    if (conf.html) {
+      watch(conf["html-source"], async () => {
+        await buildHTML();
+        reload();
+      });
+    }
     if (conf.test) {
-      keyboard(conf, reload);
+      keyboard(conf, onWatch);
     }
   }
 }

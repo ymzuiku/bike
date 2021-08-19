@@ -88,7 +88,6 @@ Options:
       --static        Auto copy static's files to out
                                                     [string] [default: "static"]
       --entry         Main typescript file, default: ${source}/index.ts [string]
-      --browser       Use Browser build types         [boolean] [default: false]
       --spawn         Use child_process.spawn replace cluster.fork
                                                       [boolean] [default: false]
       --copy          Copy other file to dist                            [array]

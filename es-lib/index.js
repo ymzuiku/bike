@@ -43,12 +43,10 @@ function getConfig(argv) {
     description: "Log cli config at run"
   }).option("html", {
     type: "string",
-    default: "index.html",
     description: "Use base html When type is browser"
-  }).option("html-text", {
+  }).option("html-out", {
     type: "string",
-    default: "",
-    description: "Use html-text replace html"
+    description: "Build client out dir, server default dist/www, test default dist-test"
   }).option("out", {
     type: "string",
     description: "Build out dir, server default dist, test default dist-test"
@@ -60,13 +58,13 @@ function getConfig(argv) {
     type: "string",
     default: "static",
     description: "Auto copy static's files to out"
+  }).option("public", {
+    type: "string",
+    default: "public",
+    description: "Auto copy public's files to html-out"
   }).option("entry", {
     type: "string",
     description: "Main typescript file, default: ${source}/index.ts"
-  }).option("browser", {
-    default: false,
-    type: "boolean",
-    description: "Use Browser build types"
   }).option("spawn", {
     type: "boolean",
     default: false,
@@ -501,7 +499,7 @@ var devServe = (conf) => {
   if (!conf.watch) {
     return;
   }
-  const htmlPath = (0, import_path6.resolve)(conf.out, "index.html");
+  const htmlPath = (0, import_path6.resolve)(conf["html-out"], "index.html");
   const { gzip, host, port, proxy } = conf;
   const publicPrefix = conf["path-prefix"];
   const app = (0, import_fastify.fastify)();
@@ -522,7 +520,7 @@ var devServe = (conf) => {
     app.register(import_fastify_compress.default, { global: true });
   }
   app.register(import_fastify_static.default, {
-    root: (0, import_path6.resolve)(cwd5, conf.out),
+    root: (0, import_path6.resolve)(cwd5, conf["html-out"]),
     prefix: publicPrefix
   });
   app.register(import_fastify_websocket.default);
@@ -544,11 +542,11 @@ var devServe = (conf) => {
   });
 };
 var releaseBrowser = (conf) => {
-  const indexJS = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf.out, "index.js"));
+  const indexJS = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.js"));
   const key = (0, import_crypto.createHmac)("sha256", "bike").update(indexJS).digest("hex").slice(5, 13);
-  import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf.out, "index.js"), (0, import_path6.resolve)(conf.out, `index-${key}.js`));
+  import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.js"), (0, import_path6.resolve)(conf["html-out"], `index-${key}.js`));
   const _html = conf["html-text"].replace("/index.js?bike=1", `"/index-${key}.js"`);
-  import_fs_extra4.default.writeFileSync((0, import_path6.resolve)(conf.out, "index.html"), _html);
+  import_fs_extra4.default.writeFileSync((0, import_path6.resolve)(conf["html-out"], "index.html"), _html);
 };
 var keep = null;
 var onBuilded = (conf) => {
@@ -618,7 +616,7 @@ var import_fs_extra7 = __toModule(require("fs-extra"));
 var import_fs_extra5 = __toModule(require("fs-extra"));
 var import_path7 = __toModule(require("path"));
 var baseConfig = (conf) => {
-  if ((!conf._ || !conf._[0]) && !conf.browser) {
+  if ((!conf._ || !conf._[0]) && !conf.html) {
     console.log("Need input source dir, like: bike src");
     process.exit();
   }
@@ -636,7 +634,7 @@ var baseConfig = (conf) => {
   }
   if (!conf.out) {
     if (conf.test) {
-      conf.out = "dist-test";
+      conf.out = "dist/test";
     } else {
       conf.out = "dist";
     }
@@ -653,7 +651,7 @@ var baseConfig = (conf) => {
     }
   }
   if (conf.target === void 0) {
-    if (conf.browser) {
+    if (conf.html) {
       conf.target = "es6";
     } else {
       conf.target = "esnext";
@@ -679,7 +677,7 @@ var baseConfig = (conf) => {
       conf.splitting = true;
     }
   };
-  if (conf.browser) {
+  if (conf.html) {
     const htmlPath = (0, import_path7.resolve)(process.cwd(), "index.html");
     const html = import_fs_extra5.default.readFileSync(htmlPath, "utf8");
     const match = html.match(/src="(.*?).(ts|tsx)"/);
@@ -688,8 +686,9 @@ var baseConfig = (conf) => {
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
         const [src, entry] = url.split("/").filter(Boolean);
-        conf.source = src;
-        conf.entry = src + "/" + entry;
+        conf["html-source"] = src;
+        conf["html-entry"] = src + "/" + entry;
+        conf["html-out"] = "dist/www";
       }
     }
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
@@ -738,37 +737,33 @@ async function bike(config) {
   if (workerStart()) {
     return;
   }
-  if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf.out))) {
-    import_fs_extra7.default.mkdirSync((0, import_path8.resolve)(cwd6, conf.out));
-  }
-  const copyFiles = new Set([conf.browser && ".env", ...conf.copy || []].filter(Boolean));
-  copyFiles.forEach((file) => {
-    const p = (0, import_path8.resolve)(cwd6, file);
-    if (import_fs_extra7.default.existsSync(p)) {
-      import_fs_extra7.default.copyFileSync(p, (0, import_path8.resolve)(cwd6, conf.out, file));
+  if (conf.html) {
+    if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf["html-out"]))) {
+      import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
     }
-  });
-  copyPackage(conf);
-  const staticPath = (0, import_path8.resolve)(cwd6, conf.static);
-  if (import_fs_extra7.default.existsSync(staticPath)) {
-    import_fs_extra7.default.copySync(staticPath, (0, import_path8.resolve)(cwd6, conf.out));
-  }
-  if (conf.browser) {
-    const htmlPath = (0, import_path8.resolve)(cwd6, conf.out, "index.html");
+    const htmlPath = (0, import_path8.resolve)(cwd6, conf["html-out"], "index.html");
     import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
-  }
-  if (conf.browser) {
-    devServe(conf);
-  }
-  const fork = () => {
-    if (conf.browser) {
-      return onBuilded(conf);
+    if (conf.watch) {
+      devServe(conf);
     }
-    if (conf.spawn) {
-      return spawn(conf);
+  }
+  if (conf.source) {
+    if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf.out))) {
+      import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf.out));
     }
-    workerFork(conf);
-  };
+    const copyFiles = new Set([".env", ...conf.copy || []].filter(Boolean));
+    copyFiles.forEach((file) => {
+      const p = (0, import_path8.resolve)(cwd6, file);
+      if (import_fs_extra7.default.existsSync(p)) {
+        import_fs_extra7.default.copyFileSync(p, (0, import_path8.resolve)(cwd6, conf.out, file));
+      }
+    });
+    const staticPath = (0, import_path8.resolve)(cwd6, conf.static);
+    if (import_fs_extra7.default.existsSync(staticPath)) {
+      import_fs_extra7.default.copySync(staticPath, (0, import_path8.resolve)(cwd6, conf.out));
+    }
+    copyPackage(conf);
+  }
   let external = void 0;
   if (conf.bundle) {
     if (conf.external) {
@@ -777,56 +772,105 @@ async function bike(config) {
       external = getExternals(conf);
     }
   }
-  const esbuildOptions = {
-    entryPoints: [(0, import_path8.resolve)(cwd6, conf.entry)],
-    bundle: conf.bundle,
-    target: conf.target || ["node16", "es6"],
-    minify: conf.minify,
-    define: conf.define,
-    platform: conf.platform,
-    splitting: conf.splitting,
-    format: conf.format,
-    external,
-    outdir: conf.splitting ? conf.out : void 0,
-    outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
-    sourcemap: conf.sourcemap
-  };
+  let esbuildOptions;
+  let esbuildHTMLOptions;
+  if (conf.source) {
+    esbuildOptions = {
+      entryPoints: [(0, import_path8.resolve)(cwd6, conf.entry)],
+      bundle: conf.bundle,
+      target: conf.target || ["node16", "es6"],
+      minify: conf.minify,
+      define: conf.define,
+      platform: conf.platform,
+      splitting: conf.splitting,
+      format: conf.format,
+      external,
+      outdir: conf.splitting ? conf.out : void 0,
+      outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
+      sourcemap: conf.sourcemap
+    };
+  }
+  if (conf.html) {
+    esbuildHTMLOptions = {
+      entryPoints: [(0, import_path8.resolve)(cwd6, conf["html-entry"])],
+      bundle: conf.bundle,
+      target: ["chrome58", "firefox57", "safari11", "edge16"],
+      minify: conf.minify,
+      define: conf.define,
+      splitting: conf.splitting,
+      format: conf.format,
+      external,
+      outdir: conf.splitting ? conf["html-out"] : void 0,
+      outfile: conf.splitting ? void 0 : conf["html-out"] + "/" + conf.outfile,
+      sourcemap: conf.sourcemap
+    };
+  }
   const build = async () => {
-    if (!conf.browser && (conf.watch || conf.start) && conf.clear) {
+    if ((conf.watch || conf.start) && conf.clear) {
       console.clear();
     }
     if (conf.before) {
       await Promise.resolve(conf.before(conf));
     }
-    await import_esbuild.default.build(esbuildOptions);
+    if (conf.source) {
+      await import_esbuild.default.build(esbuildOptions);
+    }
     if (conf.after) {
       conf.after(conf);
     }
     if (!conf.watch && !conf.start) {
-      if (conf.browser) {
-        releaseBrowser(conf);
+      console.log("release server done.");
+    }
+  };
+  const buildHTML = async () => {
+    await import_esbuild.default.build(esbuildHTMLOptions);
+    if (!conf.watch && !conf.start) {
+      releaseBrowser(conf);
+      console.log("release html done.");
+    }
+  };
+  const reload = () => {
+    if (conf.html) {
+      onBuilded(conf);
+    }
+    if (conf.source) {
+      if (conf.spawn) {
+        return spawn(conf);
       }
-      console.log("release done.");
+      workerFork(conf);
     }
   };
   try {
-    await build();
+    if (conf.source) {
+      await build();
+    }
+    if (conf.html) {
+      await buildHTML();
+    }
   } catch (err) {
     throw err;
   }
   if (conf.start) {
-    fork();
+    reload();
   } else if (conf.watch) {
-    fork();
-    const reload = async () => {
+    reload();
+    const onWatch = async () => {
       await build();
-      fork();
+      reload();
     };
-    conf.source.split(",").forEach((src) => {
-      watch(src, reload);
-    });
+    if (conf.source) {
+      conf.source.split(",").forEach((src) => {
+        watch(src, onWatch);
+      });
+    }
+    if (conf.html) {
+      watch(conf["html-source"], async () => {
+        await buildHTML();
+        reload();
+      });
+    }
     if (conf.test) {
-      keyboard(conf, reload);
+      keyboard(conf, onWatch);
     }
   }
 }

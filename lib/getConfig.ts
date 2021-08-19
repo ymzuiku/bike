@@ -17,10 +17,10 @@ export function getConfig(argv: string[]) {
       type: "string",
       description: "Use base html When type is browser",
     })
-    .option("html-text", {
+    .option("html-out", {
       type: "string",
-      default: "",
-      description: "Use html-text replace html",
+      description:
+        "Build client out dir, server default dist/www, test default dist-test",
     })
     .option("out", {
       type: "string",
@@ -35,6 +35,11 @@ export function getConfig(argv: string[]) {
       type: "string",
       default: "static",
       description: "Auto copy static's files to out",
+    })
+    .option("public", {
+      type: "string",
+      default: "public",
+      description: "Auto copy public's files to html-out",
     })
     .option("entry", {
       type: "string",
@@ -160,11 +165,6 @@ export function getConfig(argv: string[]) {
       default: "(.test|.spec|_test|_spec)",
       description: "(only-test) test files include RegExp string",
     })
-    // .option("test-exclude", {
-    //   type: "string",
-    //   default: "(node_modules)",
-    //   description: "(only-test) test files exclude RegExp string",
-    // })
     .option("rematch", {
       type: "boolean",
       default: false,
@@ -208,4 +208,7 @@ export type Conf = typeof _conf & {
   afterFork: Function;
   after: Function;
   before: Function;
+  "html-source": string;
+  "html-entry": string;
+  "html-text": string;
 };
