@@ -34,7 +34,6 @@ export const devServe = (conf: Conf) => {
         rewritePrefix: prefix,
         http2: false,
       };
-      console.log(opt);
       app.register(fastifyHttpProxy, opt);
     });
   }
@@ -72,6 +71,19 @@ export const devServe = (conf: Conf) => {
 };
 
 export const releaseBrowser = (conf: Conf) => {
+  const urlPrefix = conf["url-prefix"];
+
+  const indexCss = fs.readFileSync(resolve(conf["html-out"]!, "index.css"));
+  const cssKey = createHmac("sha256", "bike")
+    .update(indexCss)
+    .digest("hex")
+    .slice(5, 13);
+
+  fs.renameSync(
+    resolve(conf["html-out"]!, "index.css"),
+    resolve(conf["html-out"]!, `index-${cssKey}.css`)
+  );
+
   const indexJS = fs.readFileSync(resolve(conf["html-out"]!, "index.js"));
   const key = createHmac("sha256", "bike")
     .update(indexJS)
@@ -83,9 +95,9 @@ export const releaseBrowser = (conf: Conf) => {
     resolve(conf["html-out"]!, `index-${key}.js`)
   );
 
-  const _html = conf["html-text"].replace(
+  const _html = replaceCss(conf).replace(
     "/index.js?bike=1",
-    `"/index-${key}.js"`
+    `${urlPrefix}index-${key}.js`
   );
 
   fs.writeFileSync(resolve(conf["html-out"]!, "index.html"), _html);
@@ -97,6 +109,8 @@ export const onBuilded = (conf: Conf) => {
     clearTimeout(keep);
     keep = null;
   }
+
+  replaceCss(conf);
   reloadLog();
   keep = setTimeout(() => {
     // bs.reload();
@@ -114,6 +128,20 @@ export const onBuilded = (conf: Conf) => {
     });
   }, 66);
 };
+
+function replaceCss(conf: Conf) {
+  const urlPrefix = conf["url-prefix"];
+  let css = "";
+  fs.readdirSync(conf["html-out"]!).forEach((file) => {
+    if (/\.(css)/.test(file)) {
+      css += `<link rel="stylesheet" href="${urlPrefix}${file}" />\n`;
+    }
+  });
+  const _html = conf["html-text"].replace("</head>", css + "</head/>");
+
+  fs.writeFileSync(resolve(conf["html-out"]!, "index.html"), _html);
+  return _html;
+}
 
 const devHot = `(function () {
   window.devHot = true;

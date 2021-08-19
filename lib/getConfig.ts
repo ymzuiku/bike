@@ -20,12 +20,12 @@ export function getConfig(argv: string[]) {
     })
     .option("html-out", {
       type: "string",
-      description:
-        "Build client out dir, server default dist/www, test default dist-test",
+      description: "Build client out dir, server default dist/client",
     })
     .option("out", {
       type: "string",
-      description: "Build out dir, server default dist, test default dist-test",
+      description:
+        "Build out dir, server default dist/server, test default dist/test",
     })
     .option("outfile", {
       type: "string",
@@ -151,6 +151,11 @@ export function getConfig(argv: string[]) {
       type: "string",
       default: "/",
       description: "(only-browser) public file path prefix",
+    })
+    .option("url-prefix", {
+      type: "string",
+      default: "/",
+      description: "(only-browser) html file url prefix",
     })
     .option("proxy", {
       type: "array",

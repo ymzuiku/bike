@@ -47,10 +47,10 @@ function getConfig(argv) {
     description: "Use base html When type is browser"
   }).option("html-out", {
     type: "string",
-    description: "Build client out dir, server default dist/www, test default dist-test"
+    description: "Build client out dir, server default dist/client"
   }).option("out", {
     type: "string",
-    description: "Build out dir, server default dist, test default dist-test"
+    description: "Build out dir, server default dist/server, test default dist/test"
   }).option("outfile", {
     type: "string",
     default: "index.js",
@@ -149,6 +149,10 @@ function getConfig(argv) {
     type: "string",
     default: "/",
     description: "(only-browser) public file path prefix"
+  }).option("url-prefix", {
+    type: "string",
+    default: "/",
+    description: "(only-browser) html file url prefix"
   }).option("proxy", {
     type: "array",
     description: "(only-browser) Example: '--proxy=/v1::http://127.0.0.1:5000' is proxy /v1 to http://127.0.0.1:5000/v1"
@@ -516,7 +520,6 @@ var devServe = (conf) => {
         rewritePrefix: prefix,
         http2: false
       };
-      console.log(opt);
       app.register(import_fastify_http_proxy.default, opt);
     });
   }
@@ -548,10 +551,14 @@ var devServe = (conf) => {
   });
 };
 var releaseBrowser = (conf) => {
+  const urlPrefix = conf["url-prefix"];
+  const indexCss = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.css"));
+  const cssKey = (0, import_crypto.createHmac)("sha256", "bike").update(indexCss).digest("hex").slice(5, 13);
+  import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.css"), (0, import_path6.resolve)(conf["html-out"], `index-${cssKey}.css`));
   const indexJS = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.js"));
   const key = (0, import_crypto.createHmac)("sha256", "bike").update(indexJS).digest("hex").slice(5, 13);
   import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.js"), (0, import_path6.resolve)(conf["html-out"], `index-${key}.js`));
-  const _html = conf["html-text"].replace("/index.js?bike=1", `"/index-${key}.js"`);
+  const _html = replaceCss(conf).replace("/index.js?bike=1", `${urlPrefix}index-${key}.js`);
   import_fs_extra4.default.writeFileSync((0, import_path6.resolve)(conf["html-out"], "index.html"), _html);
 };
 var keep = null;
@@ -560,6 +567,7 @@ var onBuilded = (conf) => {
     clearTimeout(keep);
     keep = null;
   }
+  replaceCss(conf);
   reloadLog();
   keep = setTimeout(() => {
     wsList.forEach((ws) => {
@@ -576,6 +584,19 @@ var onBuilded = (conf) => {
     });
   }, 66);
 };
+function replaceCss(conf) {
+  const urlPrefix = conf["url-prefix"];
+  let css = "";
+  import_fs_extra4.default.readdirSync(conf["html-out"]).forEach((file) => {
+    if (/\.(css)/.test(file)) {
+      css += `<link rel="stylesheet" href="${urlPrefix}${file}" />
+`;
+    }
+  });
+  const _html = conf["html-text"].replace("</head>", css + "</head/>");
+  import_fs_extra4.default.writeFileSync((0, import_path6.resolve)(conf["html-out"], "index.html"), _html);
+  return _html;
+}
 var devHot = `(function () {
   window.devHot = true;
   let ws = new WebSocket("ws://" + location.host + "/devhot");
@@ -728,6 +749,7 @@ async function bike(config) {
     return;
   }
   if (conf.html) {
+    import_fs_extra7.default.removeSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
     if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf["html-out"]))) {
       import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
     }
@@ -742,6 +764,7 @@ async function bike(config) {
     }
   }
   if (conf.source) {
+    import_fs_extra7.default.removeSync((0, import_path8.resolve)(cwd6, conf.out));
     if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf.out))) {
       import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf.out));
     }
@@ -788,7 +811,7 @@ async function bike(config) {
     esbuildHTMLOptions = {
       entryPoints: [(0, import_path8.resolve)(cwd6, conf["html-entry"])],
       bundle: true,
-      target: ["chrome58", "firefox57", "safari11", "edge16"],
+      target: ["es6"],
       minify: !conf.watch,
       platform: "neutral",
       splitting: true,

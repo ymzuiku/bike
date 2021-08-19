@@ -22,6 +22,7 @@ export async function bike(config: Partial<Conf>) {
   }
 
   if (conf.html) {
+    fs.removeSync(resolve(cwd, conf["html-out"]!));
     if (!fs.existsSync(resolve(cwd, conf["html-out"]!))) {
       fs.mkdirpSync(resolve(cwd, conf["html-out"]!));
     }
@@ -37,6 +38,7 @@ export async function bike(config: Partial<Conf>) {
   }
 
   if (conf.source) {
+    fs.removeSync(resolve(cwd, conf.out!));
     if (!fs.existsSync(resolve(cwd, conf.out!))) {
       fs.mkdirpSync(resolve(cwd, conf.out!));
     }
@@ -90,7 +92,8 @@ export async function bike(config: Partial<Conf>) {
     esbuildHTMLOptions = {
       entryPoints: [resolve(cwd, conf["html-entry"]!)],
       bundle: true,
-      target: ["chrome58", "firefox57", "safari11", "edge16"],
+      target: ["es6"],
+      // target: ["chrome58", "firefox57", "safari11", "edge16"],
       minify: !conf.watch,
       platform: "neutral",
       splitting: true,

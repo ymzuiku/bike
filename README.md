@@ -107,9 +107,20 @@ app.listen(5000, () => {
 });
 ```
 
+client/index.css:
+
+```css
+body {
+  padding: 0px;
+  margin: 0px;
+}
+```
+
 client/index.ts:
 
 ```ts
+import "./index.css";
+
 export const App = () => {
   const div = document.createElement("div");
   div.textContent = "loading...";
@@ -136,21 +147,11 @@ public/index.html:
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link rel="stylesheet" href="global.css" />
   </head>
   <body>
     <script type="module" src="../client/index.ts"></script>
   </body>
 </html>
-```
-
-public/global.css:
-
-```css
-body {
-  padding: 0px;
-  margin: 0px;
-}
 ```
 
 package.json:
@@ -185,10 +186,9 @@ Options:
       --argv          Backup all argv                                    [array]
       --log-config    Log cli config at run           [boolean] [default: false]
   -h, --html          Use base html When type is browser                [string]
-      --html-out      Build client out dir, server default dist/www, test
-                      default dist-test                                 [string]
-      --out           Build out dir, server default dist, test default dist-test
-                                                                        [string]
+      --html-out      Build client out dir, server default dist/client  [string]
+      --out           Build out dir, server default dist/server, test default
+                      dist/test                                         [string]
       --outfile       Build out dir index name    [string] [default: "index.js"]
       --static        Auto copy static's files to out
                                                     [string] [default: "static"]
@@ -204,7 +204,7 @@ Options:
   -e, --external      Esbuild external                                   [array]
       --define        Esbuild define                                    [string]
       --target        Esbuild target, browser default: es6, nodejs default:
-                      esnext                                            [string]
+                      esnext                        [string] [default: "esnext"]
       --splitting     Esbuild splitting                                [boolean]
       --format        Esbuild format                                    [string]
       --sourcemap     Esbuild use sourcemap                            [boolean]
@@ -222,6 +222,7 @@ Options:
       --port          (only-browser) browser serve port[number] [default: 13000]
       --path-prefix   (only-browser) public file path prefix
                                                          [string] [default: "/"]
+      --url-prefix    (only-browser) html file url prefix[string] [default: "/"]
       --proxy         (only-browser) Example:
                       '--proxy=/v1::http://127.0.0.1:5000' is proxy /v1 to
                       http://127.0.0.1:5000/v1                           [array]
