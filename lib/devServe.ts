@@ -12,7 +12,7 @@ import { createHmac } from "crypto";
 const cwd = process.cwd();
 
 const wsList = new Set<WebSocket>();
-export const serve = (conf: Conf) => {
+export const devServe = (conf: Conf) => {
   if (!conf.watch) {
     return;
   }
@@ -26,13 +26,14 @@ export const serve = (conf: Conf) => {
 
   if (proxy) {
     proxy.forEach((p) => {
-      const [prefix, other] = (p as string).split("|");
+      const [prefix, other] = (p as string).split("::");
       const opt = {
         prefix,
-        upstream: other,
+        upstream: other + prefix,
         rewritePrefix: prefix,
         http2: false,
       };
+      console.log(opt);
       app.register(fastifyHttpProxy, opt);
     });
   }

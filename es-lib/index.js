@@ -151,7 +151,7 @@ function getConfig(argv) {
     description: "(only-browser) public file path prefix"
   }).option("proxy", {
     type: "array",
-    description: "(only-browser) Example: '/bike|http://127.0.0.1:5000' is proxy /bike to http://127.0.0.1:5000/bike"
+    description: "(only-browser) Example: '--proxy=/v1::http://127.0.0.1:5000' is proxy /v1 to http://127.0.0.1:5000/v1"
   }).option("reporter", {
     alias: "r",
     type: "string",
@@ -301,8 +301,8 @@ function spawn(conf) {
     lastChild = null;
   }
   let c8 = [];
-  const defaultExtension2 = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
-  const testFileExtensions2 = defaultExtension2.map((extension) => extension.slice(1)).join(",");
+  const defaultExtension = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
+  const testFileExtensions = defaultExtension.map((extension) => extension.slice(1)).join(",");
   const _c8Include = [];
   if (conf["c8-include"]?.length) {
     conf["c8-include"].forEach((k) => {
@@ -319,8 +319,8 @@ function spawn(conf) {
     "packages/*/test{,s}/**",
     "**/*.d.ts",
     "test{,s}/**",
-    `test{,-*}.{${testFileExtensions2}}`,
-    `**/*{.,-}test.{${testFileExtensions2}}`,
+    `test{,-*}.{${testFileExtensions}}`,
+    `**/*{.,-}test.{${testFileExtensions}}`,
     "**/__tests__/**",
     "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
     "**/jest.config.{js,cjs,mjs,ts}",
@@ -379,34 +379,6 @@ function copyPackage(conf) {
 // lib/worker.ts
 var import_cluster = __toModule(require("cluster"));
 var import_path4 = __toModule(require("path"));
-
-// lib/cover.ts
-var import_c8 = __toModule(require("c8"));
-var defaultExtension = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
-var testFileExtensions = defaultExtension.map((extension) => extension.slice(1)).join(",");
-var exclude = [
-  "coverage/**",
-  "packages/*/test{,s}/**",
-  "**/*.d.ts",
-  "test{,s}/**",
-  `test{,-*}.{${testFileExtensions}}`,
-  `**/*{.,-}test.{${testFileExtensions}}`,
-  "**/__tests__/**",
-  "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
-  "**/jest.config.{js,cjs,mjs,ts}",
-  "**/{karma,rollup,webpack}.config.js",
-  "**/.{eslint,mocha}rc.{js,cjs}"
-];
-var cover = (conf) => {
-  const report = new import_c8.Report({
-    reporter: ["text"]
-  });
-  report.run().then((v) => {
-    console.log(v);
-  });
-};
-
-// lib/worker.ts
 function getMsg(msg) {
   if (!/^bike::/.test(msg)) {
     return;
@@ -434,7 +406,6 @@ var workerStart = () => {
       process.on("unhandledRejection", function(err, promise) {
         console.error("[bike]", err);
       });
-      cover(conf);
       try {
         if (/\.mjs/.test(conf.outfile)) {
           import((0, import_path4.resolve)(process.cwd(), conf.out + "/" + conf.outfile));
@@ -515,7 +486,7 @@ var keyboard = (conf, reload) => {
   });
 };
 
-// lib/serve.ts
+// lib/devServe.ts
 var import_fastify = __toModule(require("fastify"));
 var import_fastify_websocket = __toModule(require("fastify-websocket"));
 var import_fs_extra4 = __toModule(require("fs-extra"));
@@ -526,7 +497,7 @@ var import_fastify_compress = __toModule(require("fastify-compress"));
 var import_crypto = __toModule(require("crypto"));
 var cwd5 = process.cwd();
 var wsList = new Set();
-var serve = (conf) => {
+var devServe = (conf) => {
   if (!conf.watch) {
     return;
   }
@@ -536,13 +507,14 @@ var serve = (conf) => {
   const app = (0, import_fastify.fastify)();
   if (proxy) {
     proxy.forEach((p) => {
-      const [prefix, other] = p.split("|");
+      const [prefix, other] = p.split("::");
       const opt = {
         prefix,
-        upstream: other,
+        upstream: other + prefix,
         rewritePrefix: prefix,
         http2: false
       };
+      console.log(opt);
       app.register(import_fastify_http_proxy.default, opt);
     });
   }
@@ -646,8 +618,9 @@ var import_fs_extra7 = __toModule(require("fs-extra"));
 var import_fs_extra5 = __toModule(require("fs-extra"));
 var import_path7 = __toModule(require("path"));
 var baseConfig = (conf) => {
-  if (!conf._ || !conf._[0]) {
+  if ((!conf._ || !conf._[0]) && !conf.browser) {
     console.log("Need input source dir, like: bike src");
+    process.exit();
   }
   conf.source = conf._[0];
   if (conf.gzip === void 0) {
@@ -723,12 +696,7 @@ var baseConfig = (conf) => {
     brower();
   }
   if (conf["log-config"]) {
-    delete conf["$0"];
-    const out = {};
-    Object.keys(conf).sort((a, b) => a - b).forEach((k) => {
-      out[k] = conf[k];
-    });
-    console.log(out);
+    console.log(conf);
     console.log(" ");
     console.log("Stop with only log config");
     process.exit();
@@ -790,7 +758,7 @@ async function bike(config) {
     import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
   }
   if (conf.browser) {
-    serve(conf);
+    devServe(conf);
   }
   const fork = () => {
     if (conf.browser) {

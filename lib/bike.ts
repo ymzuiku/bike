@@ -7,7 +7,7 @@ import { spawn } from "./spawn";
 import { copyPackage } from "./copyPackage";
 import { workerFork, workerStart } from "./worker";
 import { keyboard, cacheTestPath, cacheIgnoreTestPath } from "./keyboard";
-import { serve, onBuilded, releaseBrowser } from "./serve";
+import { devServe, onBuilded, releaseBrowser } from "./devServe";
 import fs from "fs-extra";
 import { baseConfig } from "./baseConfig";
 import { watch } from "./watch";
@@ -48,7 +48,7 @@ export async function bike(config: Partial<Conf>) {
   }
 
   if (conf.browser) {
-    serve(conf);
+    devServe(conf);
   }
   const fork = () => {
     if (conf.browser) {

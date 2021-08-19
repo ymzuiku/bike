@@ -4,8 +4,9 @@ import { resolve } from "path";
 import type { Conf } from "./getConfig";
 
 export const baseConfig = (conf: Partial<Conf>): Conf => {
-  if (!conf._ || !conf._[0]) {
+  if ((!conf._ || !conf._[0]) && !conf.browser) {
     console.log("Need input source dir, like: bike src");
+    process.exit();
   }
   conf.source = conf._![0] as any;
   if (conf.gzip === undefined) {
@@ -91,18 +92,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
   }
 
   if (conf["log-config"]) {
-    delete (conf as any)["$0"];
-    // delete (conf as any)["_"];
-    const out: any = {};
-    Object.keys(conf)
-      .sort((a: any, b: any) => a - b)
-      .forEach((k) => {
-        // if (/-/.test(k) || k.length === 1) {
-        //   return;
-        // }
-        out[k] = conf[k];
-      });
-    console.log(out);
+    console.log(conf);
     console.log(" ");
     console.log("Stop with only log config");
     process.exit();

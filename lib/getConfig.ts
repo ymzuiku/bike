@@ -154,7 +154,7 @@ export function getConfig(argv: string[]) {
     .option("proxy", {
       type: "array",
       description:
-        "(only-browser) Example: '/bike|http://127.0.0.1:5000' is proxy /bike to http://127.0.0.1:5000/bike",
+        "(only-browser) Example: '--proxy=/v1::http://127.0.0.1:5000' is proxy /v1 to http://127.0.0.1:5000/v1",
     })
     .option("reporter", {
       alias: "r",
