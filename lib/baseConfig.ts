@@ -26,7 +26,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
     if (conf.test) {
       conf.out = "dist/test";
     } else {
-      conf.out = "dist";
+      conf.out = "dist/server";
     }
   }
 
@@ -53,18 +53,23 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
   }
 
   if (conf.html) {
+    if (!conf["html-out"]) {
+      conf["html-out"] = "dist/client";
+    }
     // 解析html
-    const htmlPath = resolve(process.cwd(), "index.html");
+    const cwd = process.cwd();
+    const htmlPath = resolve(cwd, conf.html);
     const html = fs.readFileSync(htmlPath, "utf8");
     const match = html.match(/src="(.*?).(ts|tsx)"/);
     if (match && match[0]) {
       const subMatch = match[0].match(/src="(.*?)"/);
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
-        const [src, entry] = url.split("/").filter(Boolean);
-        conf["html-source"] = src;
-        conf["html-entry"] = src + "/" + entry;
-        conf["html-out"] = "dist/www";
+        const entryPath = resolve(htmlPath, url);
+        const list = entryPath.split("/").filter(Boolean);
+        conf["html-source"] = list[list.length - 2];
+        conf["html-entry"] =
+          list[list.length - 2] + "/" + list[list.length - 1];
       }
     }
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');

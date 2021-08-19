@@ -25,6 +25,10 @@ export async function bike(config: Partial<Conf>) {
     if (!fs.existsSync(resolve(cwd, conf["html-out"]!))) {
       fs.mkdirpSync(resolve(cwd, conf["html-out"]!));
     }
+    const publicPath = resolve(cwd, conf.public);
+    if (fs.existsSync(publicPath)) {
+      fs.copySync(publicPath, resolve(cwd, conf["html-out"]!));
+    }
     const htmlPath = resolve(cwd, conf["html-out"]!, "index.html");
     fs.writeFileSync(htmlPath, conf["html-text"]);
     if (conf.watch) {
@@ -83,41 +87,15 @@ export async function bike(config: Partial<Conf>) {
   }
 
   if (conf.html) {
-    // const brower = () => {
-    //   conf.platform = "neutral";
-    //   if (!conf.watch && !conf.start) {
-    //     if (conf.minify === undefined) {
-    //       conf.minify = true;
-    //     }
-    //     if (conf.sourcemap === undefined) {
-    //       conf.sourcemap = false;
-    //     }
-    //   }
-    //   if (conf.depend === undefined) {
-    //     conf.depend = true;
-    //   }
-    //   if (conf.format === undefined) {
-    //     conf.format = "esm";
-    //   }
-    //   if (conf.splitting === undefined) {
-    //     conf.splitting = true;
-    //   }
-    // };
     esbuildHTMLOptions = {
       entryPoints: [resolve(cwd, conf["html-entry"]!)],
-      bundle: conf.bundle,
-      // --target=chrome58,firefox57,safari11,edge16
+      bundle: true,
       target: ["chrome58", "firefox57", "safari11", "edge16"],
       minify: !conf.watch,
-      define: true,
       platform: "neutral",
       splitting: true,
       format: "esm",
-      // external,
-      outdir: conf.splitting ? conf["html-out"] : undefined,
-      outfile: conf.splitting
-        ? undefined
-        : conf["html-out"] + "/" + conf.outfile,
+      outdir: conf["html-out"],
       sourcemap: !conf.watch,
     };
   }

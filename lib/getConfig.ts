@@ -14,6 +14,7 @@ export function getConfig(argv: string[]) {
       description: "Log cli config at run",
     })
     .option("html", {
+      alias: "h",
       type: "string",
       description: "Use base html When type is browser",
     })
@@ -79,6 +80,7 @@ export function getConfig(argv: string[]) {
     })
     .option("target", {
       type: "string",
+      default: "esnext",
       description:
         "Esbuild target, browser default: es6, nodejs default: esnext",
     })
@@ -142,7 +144,7 @@ export function getConfig(argv: string[]) {
     })
     .option("port", {
       type: "number",
-      default: 3300,
+      default: 13000,
       description: "(only-browser) browser serve port",
     })
     .option("path-prefix", {

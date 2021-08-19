@@ -42,6 +42,7 @@ function getConfig(argv) {
     default: false,
     description: "Log cli config at run"
   }).option("html", {
+    alias: "h",
     type: "string",
     description: "Use base html When type is browser"
   }).option("html-out", {
@@ -92,6 +93,7 @@ function getConfig(argv) {
     description: "Esbuild define"
   }).option("target", {
     type: "string",
+    default: "esnext",
     description: "Esbuild target, browser default: es6, nodejs default: esnext"
   }).option("splitting", {
     type: "boolean",
@@ -141,7 +143,7 @@ function getConfig(argv) {
     description: "(only-browser) browser serve host"
   }).option("port", {
     type: "number",
-    default: 3300,
+    default: 13e3,
     description: "(only-browser) browser serve port"
   }).option("path-prefix", {
     type: "string",
@@ -538,7 +540,7 @@ var devServe = (conf) => {
     });
   });
   app.listen(port, host, () => {
-    console.log(`listen: http://${host}:${port}`);
+    console.log(`Client dev server listen: http://${host}:${port}`);
   });
 };
 var releaseBrowser = (conf) => {
@@ -636,7 +638,7 @@ var baseConfig = (conf) => {
     if (conf.test) {
       conf.out = "dist/test";
     } else {
-      conf.out = "dist";
+      conf.out = "dist/server";
     }
   }
   if (conf.reporter === "text" && conf["c8-skip-full"] == void 0) {
@@ -657,42 +659,25 @@ var baseConfig = (conf) => {
       conf.target = "esnext";
     }
   }
-  const brower = () => {
-    conf.platform = "neutral";
-    if (!conf.watch && !conf.start) {
-      if (conf.minify === void 0) {
-        conf.minify = true;
-      }
-      if (conf.sourcemap === void 0) {
-        conf.sourcemap = false;
-      }
-    }
-    if (conf.depend === void 0) {
-      conf.depend = true;
-    }
-    if (conf.format === void 0) {
-      conf.format = "esm";
-    }
-    if (conf.splitting === void 0) {
-      conf.splitting = true;
-    }
-  };
   if (conf.html) {
-    const htmlPath = (0, import_path7.resolve)(process.cwd(), "index.html");
+    if (!conf["html-out"]) {
+      conf["html-out"] = "dist/client";
+    }
+    const cwd8 = process.cwd();
+    const htmlPath = (0, import_path7.resolve)(cwd8, conf.html);
     const html = import_fs_extra5.default.readFileSync(htmlPath, "utf8");
     const match = html.match(/src="(.*?).(ts|tsx)"/);
     if (match && match[0]) {
       const subMatch = match[0].match(/src="(.*?)"/);
       if (subMatch && subMatch[1]) {
         const url = subMatch[1];
-        const [src, entry] = url.split("/").filter(Boolean);
-        conf["html-source"] = src;
-        conf["html-entry"] = src + "/" + entry;
-        conf["html-out"] = "dist/www";
+        const entryPath = (0, import_path7.resolve)(htmlPath, url);
+        const list = entryPath.split("/").filter(Boolean);
+        conf["html-source"] = list[list.length - 2];
+        conf["html-entry"] = list[list.length - 2] + "/" + list[list.length - 1];
       }
     }
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
-    brower();
   }
   if (conf["log-config"]) {
     console.log(conf);
@@ -740,6 +725,10 @@ async function bike(config) {
   if (conf.html) {
     if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf["html-out"]))) {
       import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
+    }
+    const publicPath = (0, import_path8.resolve)(cwd6, conf.public);
+    if (import_fs_extra7.default.existsSync(publicPath)) {
+      import_fs_extra7.default.copySync(publicPath, (0, import_path8.resolve)(cwd6, conf["html-out"]));
     }
     const htmlPath = (0, import_path8.resolve)(cwd6, conf["html-out"], "index.html");
     import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
@@ -793,16 +782,14 @@ async function bike(config) {
   if (conf.html) {
     esbuildHTMLOptions = {
       entryPoints: [(0, import_path8.resolve)(cwd6, conf["html-entry"])],
-      bundle: conf.bundle,
+      bundle: true,
       target: ["chrome58", "firefox57", "safari11", "edge16"],
-      minify: conf.minify,
-      define: conf.define,
-      splitting: conf.splitting,
-      format: conf.format,
-      external,
-      outdir: conf.splitting ? conf["html-out"] : void 0,
-      outfile: conf.splitting ? void 0 : conf["html-out"] + "/" + conf.outfile,
-      sourcemap: conf.sourcemap
+      minify: !conf.watch,
+      platform: "neutral",
+      splitting: true,
+      format: "esm",
+      outdir: conf["html-out"],
+      sourcemap: !conf.watch
     };
   }
   const build = async () => {

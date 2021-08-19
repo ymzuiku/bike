@@ -79,14 +79,16 @@ Options:
       --version       Show version number                              [boolean]
       --argv          Backup all argv                                    [array]
       --log-config    Log cli config at run           [boolean] [default: false]
-      --html          Use base html When type is browser
-                                                [string] [default: "index.html"]
-      --html-text     Use html-text replace html          [string] [default: ""]
+  -h, --html          Use base html When type is browser                [string]
+      --html-out      Build client out dir, server default dist/www, test
+                      default dist-test                                 [string]
       --out           Build out dir, server default dist, test default dist-test
                                                                         [string]
       --outfile       Build out dir index name    [string] [default: "index.js"]
       --static        Auto copy static's files to out
                                                     [string] [default: "static"]
+      --public        Auto copy public's files to html-out
+                                                    [string] [default: "public"]
       --entry         Main typescript file, default: ${source}/index.ts [string]
       --spawn         Use child_process.spawn replace cluster.fork
                                                       [boolean] [default: false]
@@ -112,18 +114,20 @@ Options:
       --gzip          (only-browser) gzip watch is false, else is true [boolean]
       --host          (only-browser) browser serve host
                                                  [string] [default: "127.0.0.1"]
-      --port          (only-browser) browser serve port [number] [default: 3300]
+      --port          (only-browser) browser serve port[number] [default: 13000]
       --path-prefix   (only-browser) public file path prefix
                                                          [string] [default: "/"]
-      --proxy         (only-browser) Example: '/bike|http://127.0.0.1:5000' is
-                      proxy /bike to http://127.0.0.1:5000/bike          [array]
+      --proxy         (only-browser) Example:
+                      '--proxy=/v1::http://127.0.0.1:5000' is proxy /v1 to
+                      http://127.0.0.1:5000/v1                           [array]
   -r, --reporter      (only-test) c8 reporter, pick in :[text, html]    [string]
-      --match         (only-test) test files RegExp string
+      --test-include  (only-test) test files include RegExp string
                                  [string] [default: "(.test|.spec|_test|_spec)"]
       --rematch       (only-test) auto rematch all test files on watch
                                                       [boolean] [default: false]
   -n, --c8-include    (only-test) c8 include all files                   [array]
   -x, --c8-exclude    (only-test) c8 exclude all files                   [array]
+      --c8-all        (only-test) c8 all files         [boolean] [default: true]
       --c8-config     (only-test) c8 path to JSON configuration file    [string]
       --c8-skip-full  (only-test) c8 skip full in text that ignore in html
                                                                        [boolean]

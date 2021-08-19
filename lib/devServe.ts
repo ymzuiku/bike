@@ -64,7 +64,7 @@ export const devServe = (conf: Conf) => {
   });
 
   app.listen(port, host, () => {
-    console.log(`listen: http://${host}:${port}`);
+    console.log(`Client dev server listen: http://${host}:${port}`);
   });
 };
 
