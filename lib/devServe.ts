@@ -10,6 +10,7 @@ import type { Conf } from "./getConfig";
 import { createHmac } from "crypto";
 
 const cwd = process.cwd();
+let reloadLog = () => {};
 
 const wsList = new Set<WebSocket>();
 export const devServe = (conf: Conf) => {
@@ -64,7 +65,9 @@ export const devServe = (conf: Conf) => {
   });
 
   app.listen(port, host, () => {
-    console.log(`Client dev server listen: http://${host}:${port}`);
+    reloadLog = () => {
+      console.log(`Client dev server listen: http://${host}:${port}`);
+    };
   });
 };
 
@@ -94,6 +97,7 @@ export const onBuilded = (conf: Conf) => {
     clearTimeout(keep);
     keep = null;
   }
+  reloadLog();
   keep = setTimeout(() => {
     // bs.reload();
     wsList.forEach((ws) => {

@@ -496,6 +496,8 @@ var import_fastify_static = __toModule(require("fastify-static"));
 var import_fastify_compress = __toModule(require("fastify-compress"));
 var import_crypto = __toModule(require("crypto"));
 var cwd5 = process.cwd();
+var reloadLog = () => {
+};
 var wsList = new Set();
 var devServe = (conf) => {
   if (!conf.watch) {
@@ -540,7 +542,9 @@ var devServe = (conf) => {
     });
   });
   app.listen(port, host, () => {
-    console.log(`Client dev server listen: http://${host}:${port}`);
+    reloadLog = () => {
+      console.log(`Client dev server listen: http://${host}:${port}`);
+    };
   });
 };
 var releaseBrowser = (conf) => {
@@ -556,6 +560,7 @@ var onBuilded = (conf) => {
     clearTimeout(keep);
     keep = null;
   }
+  reloadLog();
   keep = setTimeout(() => {
     wsList.forEach((ws) => {
       if (ws.readyState != 1) {
@@ -793,7 +798,7 @@ async function bike(config) {
     };
   }
   const build = async () => {
-    if ((conf.watch || conf.start) && conf.clear) {
+    if (conf.test) {
       console.clear();
     }
     if (conf.before) {
@@ -817,14 +822,16 @@ async function bike(config) {
     }
   };
   const reload = () => {
-    if (conf.html) {
-      onBuilded(conf);
-    }
     if (conf.source) {
       if (conf.spawn) {
         return spawn(conf);
       }
       workerFork(conf);
+    }
+  };
+  const reloadHTML = () => {
+    if (conf.html) {
+      onBuilded(conf);
     }
   };
   try {
@@ -839,8 +846,10 @@ async function bike(config) {
   }
   if (conf.start) {
     reload();
+    reloadHTML();
   } else if (conf.watch) {
     reload();
+    reloadHTML();
     const onWatch = async () => {
       await build();
       reload();
@@ -853,7 +862,7 @@ async function bike(config) {
     if (conf.html) {
       watch(conf["html-source"], async () => {
         await buildHTML();
-        reload();
+        reloadHTML();
       });
     }
     if (conf.test) {

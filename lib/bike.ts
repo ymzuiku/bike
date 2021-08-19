@@ -101,7 +101,10 @@ export async function bike(config: Partial<Conf>) {
   }
 
   const build = async () => {
-    if ((conf.watch || conf.start) && conf.clear) {
+    // if ((conf.watch || conf.start) && conf.clear) {
+    //   console.clear();
+    // }
+    if (conf.test) {
       console.clear();
     }
     if (conf.before) {
@@ -130,14 +133,17 @@ export async function bike(config: Partial<Conf>) {
   };
 
   const reload = () => {
-    if (conf.html) {
-      onBuilded(conf);
-    }
     if (conf.source) {
       if (conf.spawn) {
         return spawn(conf);
       }
       workerFork(conf);
+    }
+  };
+
+  const reloadHTML = () => {
+    if (conf.html) {
+      onBuilded(conf);
     }
   };
 
@@ -154,8 +160,10 @@ export async function bike(config: Partial<Conf>) {
 
   if (conf.start) {
     reload();
+    reloadHTML();
   } else if (conf.watch) {
     reload();
+    reloadHTML();
     const onWatch = async () => {
       await build();
       reload();
@@ -169,7 +177,7 @@ export async function bike(config: Partial<Conf>) {
     if (conf.html) {
       watch(conf["html-source"], async () => {
         await buildHTML();
-        reload();
+        reloadHTML();
       });
     }
     if (conf.test) {

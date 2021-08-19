@@ -69,6 +69,111 @@ npm i -g c8
 npx bike src --reporter=text
 ```
 
+## Full stack example
+
+Create project:
+
+```bash
+mkdir full-stack
+npm i --save-dev bike
+npm i --save fastify
+
+mkdir app
+touch app/index.ts
+
+mkdir client
+touch client/index.ts
+
+mkdir public
+touch public/index.html
+touch public/global.css
+```
+
+Edited some codes:
+
+app/index.ts:
+
+```ts
+import fastify from "fastify";
+
+const app = fastify();
+
+app.get("/v1/hello", async () => {
+  return { msg: "world" };
+});
+
+app.listen(5000, () => {
+  console.log("Server listen: http://localhost:5000");
+});
+```
+
+client/index.ts:
+
+```ts
+export const App = () => {
+  const div = document.createElement("div");
+  div.textContent = "loading...";
+
+  fetch("/v1/hello")
+    .then((v) => v.text())
+    .then((v) => {
+      div.textContent = v;
+    });
+
+  return div;
+};
+
+document.body.append(App());
+```
+
+public/index.html:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="global.css" />
+  </head>
+  <body>
+    <script type="module" src="../client/index.ts"></script>
+  </body>
+</html>
+```
+
+public/global.css:
+
+```css
+body {
+  padding: 0px;
+  margin: 0px;
+}
+```
+
+package.json:
+
+```json
+{
+  ...
+  "scripts": {
+    "dev": "bike app --html=public/index.html -w --proxy=/v1::http://localhost:5000",
+    "test": "bike app,client -w --test"
+  }
+  ...
+}
+```
+
+Ok, start your work:
+
+```bash
+npm run dev
+# or
+npm run test
+```
+
 ## Use CLI Options
 
 Use `bike --help`:
