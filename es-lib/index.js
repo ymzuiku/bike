@@ -156,10 +156,10 @@ function getConfig(argv) {
     alias: "r",
     type: "string",
     description: "(only-test) c8 reporter, pick in :[text, html]"
-  }).option("match", {
+  }).option("test-include", {
     type: "string",
     default: "(.test|.spec|_test|_spec)",
-    description: "(only-test) test files RegExp string"
+    description: "(only-test) test files include RegExp string"
   }).option("rematch", {
     type: "boolean",
     default: false,
@@ -822,7 +822,9 @@ async function bike(config) {
       await build();
       fork();
     };
-    watch(conf.source, reload);
+    conf.source.split(",").forEach((src) => {
+      watch(src, reload);
+    });
     if (conf.test) {
       keyboard(conf, reload);
     }
@@ -841,7 +843,7 @@ var test = (config) => {
   conf.entry = import_path9.default.resolve(conf.out, "bike.temp.ts");
   const files = [];
   let waitGroup = 0;
-  const reg = new RegExp(conf.match);
+  const include = new RegExp(conf["test-include"]);
   function findTests(dir) {
     waitGroup += 1;
     import_fs_extra8.default.readdir(dir).then((list) => {
@@ -851,7 +853,7 @@ var test = (config) => {
         import_fs_extra8.default.stat(p).then((stat) => {
           if (stat.isDirectory()) {
             findTests(p);
-          } else if (reg.test(file)) {
+          } else if (include.test(file)) {
             files.push(p);
           }
           waitGroup -= 1;
@@ -864,7 +866,9 @@ var test = (config) => {
     import_fs_extra8.default.mkdirpSync(conf.out);
   }
   async function createCode() {
-    findTests(import_path9.default.resolve(cwd7, conf.source));
+    conf.source.split(",").forEach((src) => {
+      findTests(import_path9.default.resolve(cwd7, src));
+    });
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {

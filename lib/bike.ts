@@ -6,7 +6,7 @@ import type { Conf } from "./getConfig";
 import { spawn } from "./spawn";
 import { copyPackage } from "./copyPackage";
 import { workerFork, workerStart } from "./worker";
-import { keyboard, cacheTestPath, cacheIgnoreTestPath } from "./keyboard";
+import { keyboard } from "./keyboard";
 import { devServe, onBuilded, releaseBrowser } from "./devServe";
 import fs from "fs-extra";
 import { baseConfig } from "./baseConfig";
@@ -119,7 +119,9 @@ export async function bike(config: Partial<Conf>) {
       await build();
       fork();
     };
-    watch(conf.source, reload);
+    conf.source.split(",").forEach((src) => {
+      watch(src, reload);
+    });
     if (conf.test) {
       keyboard(conf, reload);
     }

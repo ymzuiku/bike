@@ -15,7 +15,6 @@ export function getConfig(argv: string[]) {
     })
     .option("html", {
       type: "string",
-      default: "index.html",
       description: "Use base html When type is browser",
     })
     .option("html-text", {
@@ -40,11 +39,6 @@ export function getConfig(argv: string[]) {
     .option("entry", {
       type: "string",
       description: "Main typescript file, default: ${source}/index.ts",
-    })
-    .option("browser", {
-      default: false,
-      type: "boolean",
-      description: "Use Browser build types",
     })
     .option("spawn", {
       type: "boolean",
@@ -161,11 +155,16 @@ export function getConfig(argv: string[]) {
       type: "string",
       description: "(only-test) c8 reporter, pick in :[text, html]",
     })
-    .option("match", {
+    .option("test-include", {
       type: "string",
       default: "(.test|.spec|_test|_spec)",
-      description: "(only-test) test files RegExp string",
+      description: "(only-test) test files include RegExp string",
     })
+    // .option("test-exclude", {
+    //   type: "string",
+    //   default: "(node_modules)",
+    //   description: "(only-test) test files exclude RegExp string",
+    // })
     .option("rematch", {
       type: "boolean",
       default: false,

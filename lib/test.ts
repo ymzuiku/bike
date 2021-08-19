@@ -15,7 +15,7 @@ export const test = (config: Partial<Conf>) => {
 
   const files: string[] = [];
   let waitGroup = 0;
-  const reg = new RegExp(conf.match);
+  const include = new RegExp(conf["test-include"]);
 
   function findTests(dir: string) {
     waitGroup += 1;
@@ -26,7 +26,7 @@ export const test = (config: Partial<Conf>) => {
         fs.stat(p).then((stat) => {
           if (stat.isDirectory()) {
             findTests(p);
-          } else if (reg.test(file)) {
+          } else if (include.test(file)) {
             files.push(p);
           }
           waitGroup -= 1;
@@ -41,7 +41,9 @@ export const test = (config: Partial<Conf>) => {
   }
 
   async function createCode() {
-    findTests(path.resolve(cwd, conf.source));
+    conf.source.split(",").forEach((src) => {
+      findTests(path.resolve(cwd, src));
+    });
     await new Promise((res) => {
       const stop = setInterval(() => {
         if (waitGroup == 0) {
