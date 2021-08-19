@@ -73,6 +73,12 @@ export const devServe = (conf: Conf) => {
 export const releaseBrowser = (conf: Conf) => {
   const urlPrefix = conf["url-prefix"];
 
+  fs.readdirSync(conf["html-out"]!).forEach((file) => {
+    if (file !== "index.css" && /\.(css)/.test(file)) {
+      fs.remove(resolve(conf["html-out"]!, file));
+    }
+  });
+
   const indexCss = fs.readFileSync(resolve(conf["html-out"]!, "index.css"));
   const cssKey = createHmac("sha256", "bike")
     .update(indexCss)

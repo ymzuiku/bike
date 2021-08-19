@@ -552,6 +552,11 @@ var devServe = (conf) => {
 };
 var releaseBrowser = (conf) => {
   const urlPrefix = conf["url-prefix"];
+  import_fs_extra4.default.readdirSync(conf["html-out"]).forEach((file) => {
+    if (file !== "index.css" && /\.(css)/.test(file)) {
+      import_fs_extra4.default.remove((0, import_path6.resolve)(conf["html-out"], file));
+    }
+  });
   const indexCss = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.css"));
   const cssKey = (0, import_crypto.createHmac)("sha256", "bike").update(indexCss).digest("hex").slice(5, 13);
   import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.css"), (0, import_path6.resolve)(conf["html-out"], `index-${cssKey}.css`));
