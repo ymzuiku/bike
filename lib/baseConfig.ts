@@ -52,27 +52,6 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
     }
   }
 
-  const brower = () => {
-    conf.platform = "neutral";
-    if (!conf.watch && !conf.start) {
-      if (conf.minify === undefined) {
-        conf.minify = true;
-      }
-      if (conf.sourcemap === undefined) {
-        conf.sourcemap = false;
-      }
-    }
-    if (conf.depend === undefined) {
-      conf.depend = true;
-    }
-    if (conf.format === undefined) {
-      conf.format = "esm";
-    }
-    if (conf.splitting === undefined) {
-      conf.splitting = true;
-    }
-  };
-
   if (conf.html) {
     // 解析html
     const htmlPath = resolve(process.cwd(), "index.html");
@@ -89,7 +68,6 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
       }
     }
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');
-    brower();
   }
 
   if (conf["log-config"]) {

@@ -83,22 +83,42 @@ export async function bike(config: Partial<Conf>) {
   }
 
   if (conf.html) {
+    // const brower = () => {
+    //   conf.platform = "neutral";
+    //   if (!conf.watch && !conf.start) {
+    //     if (conf.minify === undefined) {
+    //       conf.minify = true;
+    //     }
+    //     if (conf.sourcemap === undefined) {
+    //       conf.sourcemap = false;
+    //     }
+    //   }
+    //   if (conf.depend === undefined) {
+    //     conf.depend = true;
+    //   }
+    //   if (conf.format === undefined) {
+    //     conf.format = "esm";
+    //   }
+    //   if (conf.splitting === undefined) {
+    //     conf.splitting = true;
+    //   }
+    // };
     esbuildHTMLOptions = {
       entryPoints: [resolve(cwd, conf["html-entry"]!)],
       bundle: conf.bundle,
       // --target=chrome58,firefox57,safari11,edge16
       target: ["chrome58", "firefox57", "safari11", "edge16"],
-      minify: conf.minify,
-      define: conf.define,
-      // platform: conf.platform,
-      splitting: conf.splitting,
-      format: conf.format,
-      external,
+      minify: !conf.watch,
+      define: true,
+      platform: "neutral",
+      splitting: true,
+      format: "esm",
+      // external,
       outdir: conf.splitting ? conf["html-out"] : undefined,
       outfile: conf.splitting
         ? undefined
         : conf["html-out"] + "/" + conf.outfile,
-      sourcemap: conf.sourcemap,
+      sourcemap: !conf.watch,
     };
   }
 
