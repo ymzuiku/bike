@@ -83,10 +83,10 @@ touch app/index.ts
 
 mkdir client
 touch client/index.ts
+touch client/index.css
 
 mkdir public
 touch public/index.html
-touch public/global.css
 ```
 
 Edited some codes:

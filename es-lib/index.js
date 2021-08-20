@@ -941,21 +941,21 @@ var test = (config) => {
       }, 20);
     });
     const code = files.map((file) => {
-      file = import_path9.default.posix.relative(import_path9.default.join(cwd7, conf.out), file);
+      file = import_path9.default.relative(import_path9.default.join(cwd7, conf.out), file);
       file = file.replace(/\.(ts|tsx|js|jsx)/, "");
+      file = file.replace(/\\/g, "/");
       return `import("${file}");`;
     }).join("\n");
     await import_fs_extra8.default.writeFile(conf.entry, `/* c8 ignore start */
 // THIS FILE IS AUTO GENERATE, DON'T EDIT.
 // tslint:disable
 /* eslint-disable */
-const g:any = global;
-g.bikeConf = ${JSON.stringify(conf)};
+(global as any).fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
 const win = new JSDOM("", { pretendToBeVisual: true }).window;
-g.window = win;
-g.document = win.document;
-g.fetch = require("node-fetch");
+(global as any).window = win;
+(global as any).document = win.document;
+(global as any).bikeConf = ${JSON.stringify(conf)};
 ${code}
 `);
   }

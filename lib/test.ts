@@ -66,14 +66,12 @@ export const test = (config: Partial<Conf>) => {
 // THIS FILE IS AUTO GENERATE, DON'T EDIT.
 // tslint:disable
 /* eslint-disable */
-import "node-fetch"
-const g:any = global;
-g.bikeConf = ${JSON.stringify(conf)};
+(global as any).fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
 const win = new JSDOM("", { pretendToBeVisual: true }).window;
-g.window = win;
-g.document = win.document;
-g.fetch = require("node-fetch");
+(global as any).window = win;
+(global as any).document = win.document;
+(global as any).bikeConf = ${JSON.stringify(conf)};
 ${code}
 `
     );
