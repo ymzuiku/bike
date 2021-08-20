@@ -941,7 +941,7 @@ var test = (config) => {
       }, 20);
     });
     const code = files.map((file) => {
-      file = import_path9.default.relative(import_path9.default.join(cwd7, conf.out), file);
+      file = import_path9.default.posix.relative(import_path9.default.join(cwd7, conf.out), file);
       file = file.replace(/\.(ts|tsx|js|jsx)/, "");
       return `import("${file}");`;
     }).join("\n");

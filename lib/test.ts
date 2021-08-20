@@ -54,7 +54,7 @@ export const test = (config: Partial<Conf>) => {
     });
     const code = files
       .map((file) => {
-        file = path.relative(path.join(cwd, conf.out!), file);
+        file = path.posix.relative(path.join(cwd, conf.out!), file);
         file = file.replace(/\.(ts|tsx|js|jsx)/, "");
         return `import("${file}");`;
       })
