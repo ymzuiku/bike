@@ -54,8 +54,9 @@ export const test = (config: Partial<Conf>) => {
     });
     const code = files
       .map((file) => {
-        file = path.posix.relative(path.join(cwd, conf.out!), file);
+        file = path.relative(path.join(cwd, conf.out!), file);
         file = file.replace(/\.(ts|tsx|js|jsx)/, "");
+        file = file.replace(/\\/g, "/");
         return `import("${file}");`;
       })
       .join("\n");
@@ -65,6 +66,7 @@ export const test = (config: Partial<Conf>) => {
 // THIS FILE IS AUTO GENERATE, DON'T EDIT.
 // tslint:disable
 /* eslint-disable */
+import "node-fetch"
 const g:any = global;
 g.bikeConf = ${JSON.stringify(conf)};
 const { JSDOM } = require("jsdom");
