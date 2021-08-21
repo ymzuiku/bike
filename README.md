@@ -4,7 +4,7 @@
 
 **Fast start typescript full stack (NodeJs/Native Browser JS) project**
 
-Use cluster auto fork code at file save;
+Bike only helps you prepare the front and back end typescript and test development environment, and will not add any functions presumptuously.
 
 ## Install
 
