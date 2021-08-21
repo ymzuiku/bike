@@ -1,6 +1,8 @@
 # bike
 
-> Fast start typescript node.js project
+<img src="bike.svg" alt="bike">
+
+> Fast start typescript full stack (NodeJs/Native Browser JS) project
 
 Use cluster auto fork code at file save;
 
