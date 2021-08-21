@@ -41,6 +41,9 @@ function getConfig(argv) {
     type: "boolean",
     default: false,
     description: "Log cli config at run"
+  }).option("browser", {
+    type: "boolean",
+    description: "Use build browser types"
   }).option("html", {
     alias: "h",
     type: "string",
@@ -557,9 +560,12 @@ var releaseBrowser = (conf) => {
       import_fs_extra4.default.remove((0, import_path6.resolve)(conf["html-out"], file));
     }
   });
-  const indexCss = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.css"));
-  const cssKey = (0, import_crypto.createHmac)("sha256", "bike").update(indexCss).digest("hex").slice(5, 13);
-  import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.css"), (0, import_path6.resolve)(conf["html-out"], `index-${cssKey}.css`));
+  let cssKey = "";
+  if (import_fs_extra4.default.existsSync((0, import_path6.resolve)(conf["html-out"], "index.css"))) {
+    const indexCss = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.css"));
+    cssKey = (0, import_crypto.createHmac)("sha256", "bike").update(indexCss).digest("hex").slice(5, 13);
+    import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.css"), (0, import_path6.resolve)(conf["html-out"], `index-${cssKey}.css`));
+  }
   const indexJS = import_fs_extra4.default.readFileSync((0, import_path6.resolve)(conf["html-out"], "index.js"));
   const key = (0, import_crypto.createHmac)("sha256", "bike").update(indexJS).digest("hex").slice(5, 13);
   import_fs_extra4.default.renameSync((0, import_path6.resolve)(conf["html-out"], "index.js"), (0, import_path6.resolve)(conf["html-out"], `index-${key}.js`));
@@ -768,18 +774,20 @@ async function bike(config) {
     if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf.out))) {
       import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf.out));
     }
-    const copyFiles = new Set([".env", ...conf.copy || []].filter(Boolean));
-    copyFiles.forEach((file) => {
-      const p = (0, import_path8.resolve)(cwd6, file);
-      if (import_fs_extra7.default.existsSync(p)) {
-        import_fs_extra7.default.copyFileSync(p, (0, import_path8.resolve)(cwd6, conf.out, file));
+    if (!conf.browser) {
+      const copyFiles = new Set([".env", ...conf.copy || []].filter(Boolean));
+      copyFiles.forEach((file) => {
+        const p = (0, import_path8.resolve)(cwd6, file);
+        if (import_fs_extra7.default.existsSync(p)) {
+          import_fs_extra7.default.copyFileSync(p, (0, import_path8.resolve)(cwd6, conf.out, file));
+        }
+      });
+      const staticPath = (0, import_path8.resolve)(cwd6, conf.static);
+      if (import_fs_extra7.default.existsSync(staticPath)) {
+        import_fs_extra7.default.copySync(staticPath, (0, import_path8.resolve)(cwd6, conf.out));
       }
-    });
-    const staticPath = (0, import_path8.resolve)(cwd6, conf.static);
-    if (import_fs_extra7.default.existsSync(staticPath)) {
-      import_fs_extra7.default.copySync(staticPath, (0, import_path8.resolve)(cwd6, conf.out));
+      copyPackage(conf);
     }
-    copyPackage(conf);
   }
   let external = void 0;
   if (conf.bundle) {
@@ -792,20 +800,34 @@ async function bike(config) {
   let esbuildOptions;
   let esbuildHTMLOptions;
   if (conf.source) {
-    esbuildOptions = {
-      entryPoints: [(0, import_path8.resolve)(cwd6, conf.entry)],
-      bundle: conf.bundle,
-      target: conf.target || ["node16", "es6"],
-      minify: conf.minify,
-      define: conf.define,
-      platform: conf.platform,
-      splitting: conf.splitting,
-      format: conf.format,
-      external,
-      outdir: conf.splitting ? conf.out : void 0,
-      outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
-      sourcemap: conf.sourcemap
-    };
+    if (conf.browser) {
+      esbuildOptions = {
+        entryPoints: [(0, import_path8.resolve)(cwd6, conf["entry"])],
+        bundle: true,
+        target: ["es6"],
+        minify: !conf.watch,
+        platform: "neutral",
+        splitting: conf.splitting,
+        format: conf.format || "cjs",
+        outdir: conf["out"],
+        sourcemap: !conf.watch
+      };
+    } else {
+      esbuildOptions = {
+        entryPoints: [(0, import_path8.resolve)(cwd6, conf.entry)],
+        bundle: conf.bundle,
+        target: conf.target || ["node16", "es6"],
+        minify: conf.minify,
+        define: conf.define,
+        platform: conf.platform,
+        splitting: conf.splitting,
+        format: conf.format,
+        external,
+        outdir: conf.splitting ? conf.out : void 0,
+        outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
+        sourcemap: conf.sourcemap
+      };
+    }
   }
   if (conf.html) {
     esbuildHTMLOptions = {
@@ -815,7 +837,7 @@ async function bike(config) {
       minify: !conf.watch,
       platform: "neutral",
       splitting: true,
-      format: "esm",
+      format: conf.format || "esm",
       outdir: conf["html-out"],
       sourcemap: !conf.watch
     };

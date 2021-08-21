@@ -43,20 +43,22 @@ export async function bike(config: Partial<Conf>) {
       fs.mkdirpSync(resolve(cwd, conf.out!));
     }
 
-    const copyFiles = new Set(
-      [".env", ...((conf.copy as string[]) || [])].filter(Boolean) as string[]
-    );
-    copyFiles.forEach((file) => {
-      const p = resolve(cwd, file);
-      if (fs.existsSync(p)) {
-        fs.copyFileSync(p, resolve(cwd, conf.out!, file));
+    if (!conf.browser) {
+      const copyFiles = new Set(
+        [".env", ...((conf.copy as string[]) || [])].filter(Boolean) as string[]
+      );
+      copyFiles.forEach((file) => {
+        const p = resolve(cwd, file);
+        if (fs.existsSync(p)) {
+          fs.copyFileSync(p, resolve(cwd, conf.out!, file));
+        }
+      });
+      const staticPath = resolve(cwd, conf.static);
+      if (fs.existsSync(staticPath)) {
+        fs.copySync(staticPath, resolve(cwd, conf.out!));
       }
-    });
-    const staticPath = resolve(cwd, conf.static);
-    if (fs.existsSync(staticPath)) {
-      fs.copySync(staticPath, resolve(cwd, conf.out!));
+      copyPackage(conf);
     }
-    copyPackage(conf);
   }
 
   let external = undefined;
@@ -72,20 +74,35 @@ export async function bike(config: Partial<Conf>) {
   let esbuildHTMLOptions: any;
 
   if (conf.source) {
-    esbuildOptions = {
-      entryPoints: [resolve(cwd, conf.entry!)],
-      bundle: conf.bundle,
-      target: conf.target || ["node16", "es6"],
-      minify: conf.minify,
-      define: conf.define,
-      platform: conf.platform,
-      splitting: conf.splitting,
-      format: conf.format,
-      external,
-      outdir: conf.splitting ? conf.out : undefined,
-      outfile: conf.splitting ? undefined : conf.out + "/" + conf.outfile,
-      sourcemap: conf.sourcemap,
-    };
+    if (conf.browser) {
+      esbuildOptions = {
+        entryPoints: [resolve(cwd, conf["entry"]!)],
+        bundle: true,
+        target: ["es6"],
+        // target: ["chrome58", "firefox57", "safari11", "edge16"],
+        minify: !conf.watch,
+        platform: "neutral",
+        splitting: conf.splitting,
+        format: conf.format || "cjs",
+        outdir: conf["out"],
+        sourcemap: !conf.watch,
+      };
+    } else {
+      esbuildOptions = {
+        entryPoints: [resolve(cwd, conf.entry!)],
+        bundle: conf.bundle,
+        target: conf.target || ["node16", "es6"],
+        minify: conf.minify,
+        define: conf.define,
+        platform: conf.platform,
+        splitting: conf.splitting,
+        format: conf.format,
+        external,
+        outdir: conf.splitting ? conf.out : undefined,
+        outfile: conf.splitting ? undefined : conf.out + "/" + conf.outfile,
+        sourcemap: conf.sourcemap,
+      };
+    }
   }
 
   if (conf.html) {
@@ -97,7 +114,7 @@ export async function bike(config: Partial<Conf>) {
       minify: !conf.watch,
       platform: "neutral",
       splitting: true,
-      format: "esm",
+      format: conf.format || "esm",
       outdir: conf["html-out"],
       sourcemap: !conf.watch,
     };

@@ -13,6 +13,10 @@ export function getConfig(argv: string[]) {
       default: false,
       description: "Log cli config at run",
     })
+    .option("browser", {
+      type: "boolean",
+      description: "Use build browser types",
+    })
     .option("html", {
       alias: "h",
       type: "string",

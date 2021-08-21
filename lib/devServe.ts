@@ -79,16 +79,19 @@ export const releaseBrowser = (conf: Conf) => {
     }
   });
 
-  const indexCss = fs.readFileSync(resolve(conf["html-out"]!, "index.css"));
-  const cssKey = createHmac("sha256", "bike")
-    .update(indexCss)
-    .digest("hex")
-    .slice(5, 13);
+  let cssKey = "";
+  if (fs.existsSync(resolve(conf["html-out"]!, "index.css"))) {
+    const indexCss = fs.readFileSync(resolve(conf["html-out"]!, "index.css"));
+    cssKey = createHmac("sha256", "bike")
+      .update(indexCss)
+      .digest("hex")
+      .slice(5, 13);
 
-  fs.renameSync(
-    resolve(conf["html-out"]!, "index.css"),
-    resolve(conf["html-out"]!, `index-${cssKey}.css`)
-  );
+    fs.renameSync(
+      resolve(conf["html-out"]!, "index.css"),
+      resolve(conf["html-out"]!, `index-${cssKey}.css`)
+    );
+  }
 
   const indexJS = fs.readFileSync(resolve(conf["html-out"]!, "index.js"));
   const key = createHmac("sha256", "bike")

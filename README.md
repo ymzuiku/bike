@@ -8,67 +8,10 @@ Use cluster auto fork code at file save;
 
 ## Install
 
-```bash
-npm install --save-dev bike
-```
-
-## Simple Example
-
-### Create project
+Install bike in global
 
 ```bash
-# Make project and files
-mkdir your-project
-cd your-project
-mkdir src
-touch src/index.ts
-touch src/index_test.ts
-
-# Install bike
-npm install --save-dev bike
-```
-
-Add some code in src/index.ts
-
-```ts
-console.log("Hello bike");
-```
-
-Add some test code in src/index_test.ts
-
-```ts
-import { test } from "bike/test";
-
-test.it("index test", (so) => {
-  so.deepEqual(21, 23);
-});
-```
-
-### Run and test
-
-Run Dev Server:
-
-```bash
-npx bike src --watch
-```
-
-Build release
-
-```bash
-npx bike src
-```
-
-Run test
-
-```bash
-npx bike src --watch --test
-```
-
-View test cover, need install c8
-
-```bash
-npm i -g c8
-npx bike src --reporter=text
+npm i -g bike
 ```
 
 ## Full stack example
@@ -178,6 +121,66 @@ npm run dev
 npm run build
 # or hot test
 npm run test
+```
+
+## Simple Example
+
+### Build Browser library
+
+```bash
+bike lib --browser --out=cjs
+```
+
+### Only Run Nodejs project
+
+```bash
+# Make project and files
+mkdir your-project
+cd your-project
+mkdir src
+touch src/index.ts
+touch src/index_test.ts
+```
+
+Add some code in src/index.ts
+
+```ts
+console.log("Hello bike");
+```
+
+Add some test code in src/index_test.ts
+
+```ts
+import { test } from "bike/test";
+
+test.it("index test", (so) => {
+  so.deepEqual(21, 23);
+});
+```
+
+Run Dev Server:
+
+```bash
+bike src --watch
+```
+
+Build release
+
+```bash
+bike src
+```
+
+Run test
+
+```bash
+bike src --watch --test
+```
+
+View test cover, need install c8
+
+```bash
+npm i -g c8
+bike src --reporter=text
 ```
 
 ## Use CLI Options
