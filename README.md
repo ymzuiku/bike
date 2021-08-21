@@ -1,4 +1,4 @@
-# 🚲︎ bike
+<h1 style="font-size:64px; font-weight:700"><span style="font-size:84px">🚲</span> Bike</h1>
 
 <img src="bike.svg" alt="bike">
 
