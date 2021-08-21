@@ -103,13 +103,11 @@ package.json:
 
 ```json
 {
-  ...
   "scripts": {
     "dev": "bike app --html=public/index.html -w --proxy=/v1::http://localhost:5000",
     "build": "bike app --html=public/index.html",
     "test": "bike app,client -w --test"
   }
-  ...
 }
 ```
 
