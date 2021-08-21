@@ -1,4 +1,4 @@
-# bike
+# 🚲︎ bike
 
 <img src="bike.svg" alt="bike">
 
