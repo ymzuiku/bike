@@ -84,7 +84,7 @@ export function getConfig(argv: string[]) {
     })
     .option("target", {
       type: "string",
-      default: "esnext",
+      default: "es6",
       description:
         "Esbuild target, browser default: es6, nodejs default: esnext",
     })

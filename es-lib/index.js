@@ -96,7 +96,7 @@ function getConfig(argv) {
     description: "Esbuild define"
   }).option("target", {
     type: "string",
-    default: "esnext",
+    default: "es6",
     description: "Esbuild target, browser default: es6, nodejs default: esnext"
   }).option("splitting", {
     type: "boolean",
