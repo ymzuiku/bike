@@ -964,7 +964,9 @@ var test = (config) => {
     });
     const code = files.map((file) => {
       file = import_path9.default.relative(import_path9.default.join(cwd7, conf.out), file);
-      file = file.replace(/\.(ts|tsx|js|jsx)/, "");
+      console.log(file);
+      file = file.replace(/\.(tsx|jsx)/g, "");
+      file = file.replace(/\.(ts|js)/g, "");
       file = file.replace(/\\/g, "/");
       return `import("${file}");`;
     }).join("\n");
