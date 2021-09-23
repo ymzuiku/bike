@@ -184,7 +184,7 @@ Keep `sequelize` not bundle, example from package.json:
 
 ```json
 {
-  "noBundleDependencies": ["sequelize"]
+  "noBundleDependencies": ["mysql2"]
 }
 ```
 
