@@ -19,10 +19,17 @@ export function copyPackage(conf: Conf) {
     } else {
       const oldDepend = pkg.dependencies;
       pkg.dependencies = {};
-      Object.keys(pkg.noBundleDependencies).forEach((k) => {
+      pkg.noBundleDependencies.forEach((k: string) => {
         pkg.dependencies[k] = oldDepend[k];
       });
     }
   }
   fs.writeJSONSync(resolve(conf.out!, "package.json"), pkg, { spaces: 2 });
+
+  // 拷贝常见的依赖版本锁
+  ["pnpm-lock.yaml", "yarn.lock", "package-lock.json"].forEach((v) => {
+    if (fs.existsSync(resolve(cwd, v))) {
+      fs.copySync(resolve(cwd, v), resolve(conf.out!, v));
+    }
+  });
 }

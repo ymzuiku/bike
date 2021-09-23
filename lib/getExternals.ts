@@ -89,7 +89,7 @@ export function getExternals(conf: Conf) {
   externals = [
     ...externals,
     ...getKeys(selfPkg.devDependencies),
-    ...getKeys(selfPkg.noBundleDependencies),
+    ...(selfPkg.noBundleDependencies || []),
   ];
 
   const pkg = getPkg();
@@ -97,12 +97,6 @@ export function getExternals(conf: Conf) {
   if (pkg) {
     if (!conf.depend && pkg.dependencies) {
       const depend = getKeys(pkg.dependencies);
-      // if (depend.indexOf("bike") > -1) {
-      //   console.error(
-      //     "Error: bike is in package.dependencies, Please move bike to package.devDependencies."
-      //   );
-      //   process.exit();
-      // }
       externals = [...externals, ...depend];
     }
     if (pkg.devDependencies) {
@@ -115,5 +109,6 @@ export function getExternals(conf: Conf) {
       externals = [...externals, ...tsconfig.exclude];
     }
   }
+
   return Array.from(new Set(externals));
 }

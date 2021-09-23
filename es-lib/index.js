@@ -133,8 +133,8 @@ function getConfig(argv) {
     description: "Esbuild define"
   }).option("target", {
     type: "string",
-    default: "esnext",
-    description: "Esbuild target, browser default: es6, nodejs default: esnext"
+    default: "es2018",
+    description: "Esbuild target, browser default: es6, nodejs default: es2018"
   }).option("splitting", {
     type: "boolean",
     description: "Esbuild splitting"
@@ -322,7 +322,7 @@ function getExternals(conf) {
   externals = [
     ...externals,
     ...getKeys(selfPkg.devDependencies),
-    ...getKeys(selfPkg.noBundleDependencies)
+    ...selfPkg.noBundleDependencies || []
   ];
   const pkg = getPkg();
   if (pkg) {
@@ -435,12 +435,17 @@ function copyPackage(conf) {
     } else {
       const oldDepend = pkg.dependencies;
       pkg.dependencies = {};
-      Object.keys(pkg.noBundleDependencies).forEach((k) => {
+      pkg.noBundleDependencies.forEach((k) => {
         pkg.dependencies[k] = oldDepend[k];
       });
     }
   }
   import_fs_extra2.default.writeJSONSync((0, import_path3.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
+  ["pnpm-lock.yaml", "yarn.lock", "package-lock.json"].forEach((v) => {
+    if (import_fs_extra2.default.existsSync((0, import_path3.resolve)(cwd3, v))) {
+      import_fs_extra2.default.copySync((0, import_path3.resolve)(cwd3, v), (0, import_path3.resolve)(conf.out, v));
+    }
+  });
 }
 
 // lib/worker.ts
