@@ -160,27 +160,36 @@ public/index.html:
 </html>
 ```
 
-package.json:
+Ok, start your work:
+
+```bash
+bike app --html=public/index.html -w --proxy=/v1::http://localhost:5000
+# or build release
+bike app --html=public/index.html
+# or hot test
+bike app,client -w --test
+```
+
+## Use bundle depend
+
+Bundle all dependencies in `bundle.js`
+
+```bash
+bike app --depend
+```
+
+If you need keep some dependencies in node_modules:
+
+Keep `sequelize` not bundle, example from package.json:
 
 ```json
 {
-  "scripts": {
-    "dev": "bike app --html=public/index.html -w --proxy=/v1::http://localhost:5000",
-    "build": "bike app --html=public/index.html",
-    "test": "bike app,client -w --test"
+  "noBundleDependencies": {
+    "sequelize":true
   }
 }
 ```
 
-Ok, start your work:
-
-```bash
-npm run dev
-# or build release
-npm run build
-# or hot test
-npm run test
-```
 
 
 ## Use CLI Options

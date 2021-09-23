@@ -11,5 +11,18 @@ export function copyPackage(conf: Conf) {
   }
   const pkg = require(pkgPath) || null;
   delete pkg.devDependencies;
+  delete pkg.scripts;
+  delete pkg["lint-staged"];
+  if (conf.depend && pkg.dependencies) {
+    if (!pkg.noBundleDependencies) {
+      delete pkg.dependencies;
+    } else {
+      const oldDepend = pkg.dependencies;
+      pkg.dependencies = {};
+      Object.keys(pkg.noBundleDependencies).forEach((k) => {
+        pkg.dependencies[k] = oldDepend[k];
+      });
+    }
+  }
   fs.writeJSONSync(resolve(conf.out!, "package.json"), pkg, { spaces: 2 });
 }

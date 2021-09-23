@@ -1,11 +1,11 @@
 {
   "name": "bike",
-  "version": "0.8.13",
+  "version": "0.9.0",
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "scripts": {
-    "lib": "esbuild --define:process.env.NODE_ENV=\\\"production\\\" lib/index.ts --outdir=es-lib --target=esnext --platform=node  --bundle --external:c8 --external:chalk --external:esbuild --external:fast-deep-equal --external:fs-extra --external:source-map-support --external:tslib --external:typescript --external:fastify --external:fastify-compress --external:fastify-http-proxy --external:fastify-static --external:fastify-websocket --external:yargs --external:node-fetch --external:chokidar --external:jsdom --external:c8 --sourcemap",
-    "test": "esbuild --define:process.env.NODE_ENV=\\\"production\\\" test/index.ts --outdir=es-test --target=esnext --platform=node  --bundle --external:c8 --external:chalk --external:esbuild --external:fast-deep-equal --external:fs-extra --external:source-map-support --external:tslib --external:typescript --external:fastify --external:fastify-compress --external:fastify-http-proxy --external:fastify-static --external:fastify-websocket --external:yargs --external:node-fetch --external:chokidar --external:jsdom --external:c8 --sourcemap",
+    "lib": "esbuild --define:process.env.NODE_ENV=\\\"production\\\" lib/index.ts --outdir=es-lib --target=es6 --platform=node  --bundle --external:c8 --external:chalk --external:esbuild --external:fast-deep-equal --external:fs-extra --external:source-map-support --external:tslib --external:typescript --external:fastify --external:fastify-compress --external:fastify-http-proxy --external:fastify-static --external:fastify-websocket --external:yargs --external:node-fetch --external:chokidar --external:jsdom --external:c8 --sourcemap",
+    "test": "esbuild --define:process.env.NODE_ENV=\\\"production\\\" test/index.ts --outdir=es-test --target=esnext --platform=node  --bundle --external:c8 --external:chalk --external:es6 --external:fast-deep-equal --external:fs-extra --external:source-map-support --external:tslib --external:typescript --external:fastify --external:fastify-compress --external:fastify-http-proxy --external:fastify-static --external:fastify-websocket --external:yargs --external:node-fetch --external:chokidar --external:jsdom --external:c8 --sourcemap",
     "es": "npm run lib && npm run test"
   },
   "exports": {
@@ -37,7 +37,7 @@
     "c8": "^7.8.0",
     "chalk": "^4.1.1",
     "chokidar": "^3.5.2",
-    "esbuild": "^0.12.15",
+    "esbuild": "^0.12.29",
     "fast-deep-equal": "^3.1.3",
     "fastify": "^3.20.1",
     "fastify-compress": "^3.6.0",

@@ -33,7 +33,6 @@ function getKeys(obj: { [key: string]: string }) {
 
 export function getExternals(conf: Conf) {
   let externals = [
-    // "bike",
     "assert",
     "async_hooks",
     "buffer",
@@ -78,11 +77,20 @@ export function getExternals(conf: Conf) {
     "worker_threads",
     "zlib",
   ];
+  externals = [
+    ...externals,
+    ...externals.map((v) => {
+      return "node:" + v;
+    }),
+  ];
 
   const tsconfigPath = resolve(cwd, "tsconfig.json");
   const selfPkg = require(resolve(__dirname, "../package.json"));
-  externals = [...externals, ...getKeys(selfPkg.dependencies)];
-  externals = [...externals, ...getKeys(selfPkg.devDependencies)];
+  externals = [
+    ...externals,
+    ...getKeys(selfPkg.devDependencies),
+    ...getKeys(selfPkg.noBundleDependencies),
+  ];
 
   const pkg = getPkg();
 

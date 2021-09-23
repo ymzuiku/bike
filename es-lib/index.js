@@ -1,9 +1,26 @@
 var __create = Object.create;
 var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    }
+  return a;
+};
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
 var __export = (target, all) => {
   __markAsModule(target);
@@ -20,6 +37,26 @@ var __reExport = (target, module2, desc) => {
 };
 var __toModule = (module2) => {
   return __reExport(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", module2 && module2.__esModule && "default" in module2 ? { get: () => module2.default, enumerable: true } : { value: module2, enumerable: true })), module2);
+};
+var __async = (__this, __arguments, generator) => {
+  return new Promise((resolve8, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve8(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
 };
 
 // lib/index.ts
@@ -96,7 +133,7 @@ function getConfig(argv) {
     description: "Esbuild define"
   }).option("target", {
     type: "string",
-    default: "es6",
+    default: "esnext",
     description: "Esbuild target, browser default: es6, nodejs default: esnext"
   }).option("splitting", {
     type: "boolean",
@@ -274,10 +311,19 @@ function getExternals(conf) {
     "worker_threads",
     "zlib"
   ];
+  externals = [
+    ...externals,
+    ...externals.map((v) => {
+      return "node:" + v;
+    })
+  ];
   const tsconfigPath = (0, import_path.resolve)(cwd, "tsconfig.json");
   const selfPkg = require((0, import_path.resolve)(__dirname, "../package.json"));
-  externals = [...externals, ...getKeys(selfPkg.dependencies)];
-  externals = [...externals, ...getKeys(selfPkg.devDependencies)];
+  externals = [
+    ...externals,
+    ...getKeys(selfPkg.devDependencies),
+    ...getKeys(selfPkg.noBundleDependencies)
+  ];
   const pkg = getPkg();
   if (pkg) {
     if (!conf.depend && pkg.dependencies) {
@@ -303,6 +349,7 @@ var import_path2 = __toModule(require("path"));
 var lastChild = null;
 var cwd2 = process.cwd();
 function spawn(conf) {
+  var _a, _b;
   if (lastChild) {
     lastChild.kill(0);
     lastChild = null;
@@ -311,7 +358,7 @@ function spawn(conf) {
   const defaultExtension = [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx"];
   const testFileExtensions = defaultExtension.map((extension) => extension.slice(1)).join(",");
   const _c8Include = [];
-  if (conf["c8-include"]?.length) {
+  if ((_a = conf["c8-include"]) == null ? void 0 : _a.length) {
     conf["c8-include"].forEach((k) => {
       _c8Include.push(k);
     });
@@ -334,7 +381,7 @@ function spawn(conf) {
     "**/{karma,rollup,webpack}.config.js",
     "**/.{eslint,mocha}rc.{js,cjs}"
   ];
-  if (conf["c8-exclude"]?.length) {
+  if ((_b = conf["c8-exclude"]) == null ? void 0 : _b.length) {
     conf["c8-exclude"].forEach((k) => {
       _c8Exclude.push(k);
     });
@@ -380,6 +427,19 @@ function copyPackage(conf) {
   }
   const pkg = require(pkgPath) || null;
   delete pkg.devDependencies;
+  delete pkg.scripts;
+  delete pkg["lint-staged"];
+  if (conf.depend && pkg.dependencies) {
+    if (!pkg.noBundleDependencies) {
+      delete pkg.dependencies;
+    } else {
+      const oldDepend = pkg.dependencies;
+      pkg.dependencies = {};
+      Object.keys(pkg.noBundleDependencies).forEach((k) => {
+        pkg.dependencies[k] = oldDepend[k];
+      });
+    }
+  }
   import_fs_extra2.default.writeJSONSync((0, import_path3.resolve)(conf.out, "package.json"), pkg, { spaces: 2 });
 }
 
@@ -726,16 +786,16 @@ var import_fs_extra6 = __toModule(require("fs-extra"));
 var import_os = __toModule(require("os"));
 var watch = (uri, event2, timeout = 65) => {
   let lock = false;
-  const fn = async () => {
+  const fn = () => __async(void 0, null, function* () {
     if (lock) {
       return;
     }
     lock = true;
-    await Promise.resolve(event2());
+    yield Promise.resolve(event2());
     setTimeout(() => {
       lock = false;
     }, timeout);
-  };
+  });
   if (/(darwin|window)/.test(import_os.default.type().toLowerCase())) {
     if (import_fs_extra6.default.statSync(uri).isDirectory()) {
       import_fs_extra6.default.watch(uri, { recursive: true }, fn);
@@ -749,171 +809,173 @@ var watch = (uri, event2, timeout = 65) => {
 
 // lib/bike.ts
 var cwd6 = process.cwd();
-async function bike(config) {
-  const conf = baseConfig(config);
-  if (workerStart()) {
-    return;
-  }
-  if (conf.html) {
-    import_fs_extra7.default.removeSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
-    if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf["html-out"]))) {
-      import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
+function bike(config) {
+  return __async(this, null, function* () {
+    const conf = baseConfig(config);
+    if (workerStart()) {
+      return;
     }
-    const publicPath = (0, import_path8.resolve)(cwd6, conf.public);
-    if (import_fs_extra7.default.existsSync(publicPath)) {
-      import_fs_extra7.default.copySync(publicPath, (0, import_path8.resolve)(cwd6, conf["html-out"]));
-    }
-    const htmlPath = (0, import_path8.resolve)(cwd6, conf["html-out"], "index.html");
-    import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
-    if (conf.watch) {
-      devServe(conf);
-    }
-  }
-  if (conf.source) {
-    import_fs_extra7.default.removeSync((0, import_path8.resolve)(cwd6, conf.out));
-    if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf.out))) {
-      import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf.out));
-    }
-    if (!conf.browser) {
-      const copyFiles = new Set([".env", ...conf.copy || []].filter(Boolean));
-      copyFiles.forEach((file) => {
-        const p = (0, import_path8.resolve)(cwd6, file);
-        if (import_fs_extra7.default.existsSync(p)) {
-          import_fs_extra7.default.copyFileSync(p, (0, import_path8.resolve)(cwd6, conf.out, file));
-        }
-      });
-      const staticPath = (0, import_path8.resolve)(cwd6, conf.static);
-      if (import_fs_extra7.default.existsSync(staticPath)) {
-        import_fs_extra7.default.copySync(staticPath, (0, import_path8.resolve)(cwd6, conf.out));
+    if (conf.html) {
+      import_fs_extra7.default.removeSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
+      if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf["html-out"]))) {
+        import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf["html-out"]));
       }
-      copyPackage(conf);
+      const publicPath = (0, import_path8.resolve)(cwd6, conf.public);
+      if (import_fs_extra7.default.existsSync(publicPath)) {
+        import_fs_extra7.default.copySync(publicPath, (0, import_path8.resolve)(cwd6, conf["html-out"]));
+      }
+      const htmlPath = (0, import_path8.resolve)(cwd6, conf["html-out"], "index.html");
+      import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
+      if (conf.watch) {
+        devServe(conf);
+      }
     }
-  }
-  let external = void 0;
-  if (conf.bundle) {
-    if (conf.external) {
-      external = [...getExternals(conf), ...conf.external];
-    } else {
-      external = getExternals(conf);
+    if (conf.source) {
+      import_fs_extra7.default.removeSync((0, import_path8.resolve)(cwd6, conf.out));
+      if (!import_fs_extra7.default.existsSync((0, import_path8.resolve)(cwd6, conf.out))) {
+        import_fs_extra7.default.mkdirpSync((0, import_path8.resolve)(cwd6, conf.out));
+      }
+      if (!conf.browser) {
+        const copyFiles = new Set([".env", ...conf.copy || []].filter(Boolean));
+        copyFiles.forEach((file) => {
+          const p = (0, import_path8.resolve)(cwd6, file);
+          if (import_fs_extra7.default.existsSync(p)) {
+            import_fs_extra7.default.copyFileSync(p, (0, import_path8.resolve)(cwd6, conf.out, file));
+          }
+        });
+        const staticPath = (0, import_path8.resolve)(cwd6, conf.static);
+        if (import_fs_extra7.default.existsSync(staticPath)) {
+          import_fs_extra7.default.copySync(staticPath, (0, import_path8.resolve)(cwd6, conf.out));
+        }
+        copyPackage(conf);
+      }
     }
-  }
-  let esbuildOptions;
-  let esbuildHTMLOptions;
-  if (conf.source) {
-    if (conf.browser) {
-      esbuildOptions = {
-        entryPoints: [(0, import_path8.resolve)(cwd6, conf["entry"])],
+    let external = void 0;
+    if (conf.bundle) {
+      if (conf.external) {
+        external = [...getExternals(conf), ...conf.external];
+      } else {
+        external = getExternals(conf);
+      }
+    }
+    let esbuildOptions;
+    let esbuildHTMLOptions;
+    if (conf.source) {
+      if (conf.browser) {
+        esbuildOptions = {
+          entryPoints: [(0, import_path8.resolve)(cwd6, conf["entry"])],
+          bundle: true,
+          target: ["es6"],
+          minify: !conf.watch,
+          platform: "neutral",
+          splitting: conf.splitting,
+          format: conf.format || "cjs",
+          outdir: conf["out"],
+          sourcemap: !conf.watch
+        };
+      } else {
+        esbuildOptions = {
+          entryPoints: [(0, import_path8.resolve)(cwd6, conf.entry)],
+          bundle: conf.bundle,
+          target: conf.target || ["node16", "es6"],
+          minify: conf.minify,
+          define: conf.define,
+          platform: conf.platform,
+          splitting: conf.splitting,
+          format: conf.format,
+          external,
+          outdir: conf.splitting ? conf.out : void 0,
+          outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
+          sourcemap: conf.sourcemap
+        };
+      }
+    }
+    if (conf.html) {
+      esbuildHTMLOptions = {
+        entryPoints: [(0, import_path8.resolve)(cwd6, conf["html-entry"])],
         bundle: true,
         target: ["es6"],
         minify: !conf.watch,
         platform: "neutral",
-        splitting: conf.splitting,
-        format: conf.format || "cjs",
-        outdir: conf["out"],
+        splitting: true,
+        format: conf.format || "esm",
+        outdir: conf["html-out"],
         sourcemap: !conf.watch
       };
-    } else {
-      esbuildOptions = {
-        entryPoints: [(0, import_path8.resolve)(cwd6, conf.entry)],
-        bundle: conf.bundle,
-        target: conf.target || ["node16", "es6"],
-        minify: conf.minify,
-        define: conf.define,
-        platform: conf.platform,
-        splitting: conf.splitting,
-        format: conf.format,
-        external,
-        outdir: conf.splitting ? conf.out : void 0,
-        outfile: conf.splitting ? void 0 : conf.out + "/" + conf.outfile,
-        sourcemap: conf.sourcemap
-      };
     }
-  }
-  if (conf.html) {
-    esbuildHTMLOptions = {
-      entryPoints: [(0, import_path8.resolve)(cwd6, conf["html-entry"])],
-      bundle: true,
-      target: ["es6"],
-      minify: !conf.watch,
-      platform: "neutral",
-      splitting: true,
-      format: conf.format || "esm",
-      outdir: conf["html-out"],
-      sourcemap: !conf.watch
-    };
-  }
-  const build = async () => {
-    if (conf.test) {
-      console.clear();
-    }
-    if (conf.before) {
-      await Promise.resolve(conf.before(conf));
-    }
-    if (conf.source) {
-      await import_esbuild.default.build(esbuildOptions);
-    }
-    if (conf.after) {
-      conf.after(conf);
-    }
-    if (!conf.watch && !conf.start) {
-      console.log("release server done.");
-    }
-  };
-  const buildHTML = async () => {
-    await import_esbuild.default.build(esbuildHTMLOptions);
-    if (!conf.watch && !conf.start) {
-      releaseBrowser(conf);
-      console.log("release html done.");
-    }
-  };
-  const reload = () => {
-    if (conf.source) {
-      if (conf.spawn) {
-        return spawn(conf);
+    const build = () => __async(this, null, function* () {
+      if (conf.test) {
+        console.clear();
       }
-      workerFork(conf);
-    }
-  };
-  const reloadHTML = () => {
-    if (conf.html) {
-      onBuilded(conf);
-    }
-  };
-  try {
-    if (conf.source) {
-      await build();
-    }
-    if (conf.html) {
-      await buildHTML();
-    }
-  } catch (err) {
-    throw err;
-  }
-  if (conf.start) {
-    reload();
-    reloadHTML();
-  } else if (conf.watch) {
-    reload();
-    reloadHTML();
-    const onWatch = async () => {
-      await build();
-      reload();
+      if (conf.before) {
+        yield Promise.resolve(conf.before(conf));
+      }
+      if (conf.source) {
+        yield import_esbuild.default.build(esbuildOptions);
+      }
+      if (conf.after) {
+        conf.after(conf);
+      }
+      if (!conf.watch && !conf.start) {
+        console.log("release server done.");
+      }
+    });
+    const buildHTML = () => __async(this, null, function* () {
+      yield import_esbuild.default.build(esbuildHTMLOptions);
+      if (!conf.watch && !conf.start) {
+        releaseBrowser(conf);
+        console.log("release html done.");
+      }
+    });
+    const reload = () => {
+      if (conf.source) {
+        if (conf.spawn) {
+          return spawn(conf);
+        }
+        workerFork(conf);
+      }
     };
-    if (conf.source) {
-      conf.source.split(",").forEach((src) => {
-        watch(src, onWatch);
+    const reloadHTML = () => {
+      if (conf.html) {
+        onBuilded(conf);
+      }
+    };
+    try {
+      if (conf.source) {
+        yield build();
+      }
+      if (conf.html) {
+        yield buildHTML();
+      }
+    } catch (err) {
+      throw err;
+    }
+    if (conf.start) {
+      reload();
+      reloadHTML();
+    } else if (conf.watch) {
+      reload();
+      reloadHTML();
+      const onWatch = () => __async(this, null, function* () {
+        yield build();
+        reload();
       });
+      if (conf.source) {
+        conf.source.split(",").forEach((src) => {
+          watch(src, onWatch);
+        });
+      }
+      if (conf.html) {
+        watch(conf["html-source"], () => __async(this, null, function* () {
+          yield buildHTML();
+          reloadHTML();
+        }));
+      }
+      if (conf.test) {
+        keyboard(conf, onWatch);
+      }
     }
-    if (conf.html) {
-      watch(conf["html-source"], async () => {
-        await buildHTML();
-        reloadHTML();
-      });
-    }
-    if (conf.test) {
-      keyboard(conf, onWatch);
-    }
-  }
+  });
 }
 
 // lib/test.ts
@@ -950,27 +1012,27 @@ var test = (config) => {
   if (!import_fs_extra8.default.existsSync(conf.out)) {
     import_fs_extra8.default.mkdirpSync(conf.out);
   }
-  async function createCode() {
-    conf.source.split(",").forEach((src) => {
-      findTests(import_path9.default.resolve(cwd7, src));
-    });
-    await new Promise((res) => {
-      const stop = setInterval(() => {
-        if (waitGroup == 0) {
-          clearInterval(stop);
-          res(void 0);
-        }
-      }, 20);
-    });
-    const code = files.map((file) => {
-      file = import_path9.default.relative(import_path9.default.join(cwd7, conf.out), file);
-      console.log(file);
-      file = file.replace(/\.(tsx|jsx)/g, "");
-      file = file.replace(/\.(ts|js)/g, "");
-      file = file.replace(/\\/g, "/");
-      return `import("${file}");`;
-    }).join("\n");
-    await import_fs_extra8.default.writeFile(conf.entry, `/* c8 ignore start */
+  function createCode() {
+    return __async(this, null, function* () {
+      conf.source.split(",").forEach((src) => {
+        findTests(import_path9.default.resolve(cwd7, src));
+      });
+      yield new Promise((res) => {
+        const stop = setInterval(() => {
+          if (waitGroup == 0) {
+            clearInterval(stop);
+            res(void 0);
+          }
+        }, 20);
+      });
+      const code = files.map((file) => {
+        file = import_path9.default.relative(import_path9.default.join(cwd7, conf.out), file);
+        file = file.replace(/\.(tsx|jsx)/g, "");
+        file = file.replace(/\.(ts|js)/g, "");
+        file = file.replace(/\\/g, "/");
+        return `import("${file}");`;
+      }).join("\n");
+      yield import_fs_extra8.default.writeFile(conf.entry, `/* c8 ignore start */
 // THIS FILE IS AUTO GENERATE, DON'T EDIT.
 // tslint:disable
 /* eslint-disable */
@@ -982,15 +1044,18 @@ const win = new JSDOM("", { pretendToBeVisual: true }).window;
 (global as any).bikeConf = ${JSON.stringify(conf)};
 ${code}
 `);
+    });
   }
   let createdCoded = false;
-  async function before() {
-    if (!createdCoded || conf.rematch) {
-      await createCode();
-      createdCoded = true;
-    }
+  function before() {
+    return __async(this, null, function* () {
+      if (!createdCoded || conf.rematch) {
+        yield createCode();
+        createdCoded = true;
+      }
+    });
   }
-  bike({ ...conf, before });
+  bike(__spreadProps(__spreadValues({}, conf), { before }));
 };
 
 // lib/index.ts

@@ -5,7 +5,12 @@
   },
   "compilerOptions": {
     "target": "es6",
-    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "webworker"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -24,8 +29,19 @@
     "declaration": false,
     "outDir": "./umd",
     "jsx": "preserve",
-    "types": ["jest"]
+    "types": [
+      "jest"
+    ]
   },
-  "exclude": [".vscode", ".git", "node_modules", "umd", "dist"],
-  "include": ["test", "lib"]
+  "exclude": [
+    ".vscode",
+    ".git",
+    "node_modules",
+    "umd",
+    "dist"
+  ],
+  "include": [
+    "test",
+    "lib"
+  ]
 }

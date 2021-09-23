@@ -84,9 +84,9 @@ export function getConfig(argv: string[]) {
     })
     .option("target", {
       type: "string",
-      default: "es6",
+      default: "es2018",
       description:
-        "Esbuild target, browser default: es6, nodejs default: esnext",
+        "Esbuild target, browser default: es6, nodejs default: es2018",
     })
     .option("splitting", {
       type: "boolean",
