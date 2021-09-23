@@ -1,8 +1,10 @@
+**Fast start typescript full stack (NodeJs/Native Browser JS) project**
+
 <h1 style="font-size:64px; font-weight:700"><span style="font-size:84px">🚲</span> Bike</h1>
 
 <img src="bike.svg" alt="bike">
 
-**Fast start typescript full stack (NodeJs/Native Browser JS) project**
+
 
 Bike only helps you prepare the front and back end typescript and test development environment, and will not add any functions presumptuously.
 
