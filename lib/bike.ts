@@ -197,7 +197,9 @@ export async function bike(config: Partial<Conf>) {
     }
     if (Array.isArray(conf.watch)) {
       conf.watch.forEach((src) => {
-        watch(src, onWatch);
+        if (typeof src == "string") {
+          watch(src, onWatch);
+        }
       });
     }
 

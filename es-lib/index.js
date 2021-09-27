@@ -972,7 +972,9 @@ function bike(config) {
       }
       if (Array.isArray(conf.watch)) {
         conf.watch.forEach((src) => {
-          watch(src, onWatch);
+          if (typeof src == "string") {
+            watch(src, onWatch);
+          }
         });
       }
       if (conf.html) {
