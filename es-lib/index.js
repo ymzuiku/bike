@@ -167,9 +167,9 @@ function getConfig(argv) {
     description: "Esbuild platform"
   }).option("watch", {
     alias: "w",
-    type: "boolean",
+    type: "array",
     default: false,
-    description: "Watch dir on change reload"
+    description: "Watch source dir and other dir on change reload, example: watch source: '-w', watch other some dir: '-w=server -w=pkg'"
   }).option("clear", {
     type: "boolean",
     default: true,
@@ -967,6 +967,11 @@ function bike(config) {
       });
       if (conf.source) {
         conf.source.split(",").forEach((src) => {
+          watch(src, onWatch);
+        });
+      }
+      if (Array.isArray(conf.watch)) {
+        conf.watch.forEach((src) => {
           watch(src, onWatch);
         });
       }

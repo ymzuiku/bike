@@ -202,6 +202,7 @@ Options:
       --version       Show version number                              [boolean]
       --argv          Backup all argv                                    [array]
       --log-config    Log cli config at run           [boolean] [default: false]
+      --browser       Use build browser types                          [boolean]
   -h, --html          Use base html When type is browser                [string]
       --html-out      Build client out dir, server default dist/client  [string]
       --out           Build out dir, server default dist/server, test default
@@ -221,7 +222,7 @@ Options:
   -e, --external      Esbuild external                                   [array]
       --define        Esbuild define                                    [string]
       --target        Esbuild target, browser default: es6, nodejs default:
-                      esnext                        [string] [default: "esnext"]
+                      es2018                        [string] [default: "es2018"]
       --splitting     Esbuild splitting                                [boolean]
       --format        Esbuild format                                    [string]
       --sourcemap     Esbuild use sourcemap                            [boolean]
@@ -231,7 +232,9 @@ Options:
   -f, --focus         Use RegExp focus some test                        [string]
       --start         Start server after on build     [boolean] [default: false]
       --platform      Esbuild platform                [string] [default: "node"]
-  -w, --watch         Watch dir on change reload      [boolean] [default: false]
+  -w, --watch         Watch source dir and other dir on change reload, example:
+                      watch source: '-w', watch other some dir: '-w=server
+                      -w=pkg'                           [array] [default: false]
       --clear         On reload auto clear             [boolean] [default: true]
       --gzip          (only-browser) gzip watch is false, else is true [boolean]
       --host          (only-browser) browser serve host

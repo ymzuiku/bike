@@ -128,9 +128,10 @@ export function getConfig(argv: string[]) {
     })
     .option("watch", {
       alias: "w",
-      type: "boolean",
+      type: "array",
       default: false,
-      description: "Watch dir on change reload",
+      description:
+        "Watch source dir and other dir on change reload, example: watch source: '-w', watch other some dir: '-w=server -w=pkg'",
     })
     .option("clear", {
       type: "boolean",

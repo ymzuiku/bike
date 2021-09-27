@@ -45,7 +45,9 @@ export async function bike(config: Partial<Conf>) {
 
     if (!conf.browser) {
       const copyFiles = new Set(
-        [".env", ...((conf.copy as string[]) || [])].filter(Boolean) as string[]
+        [".env", ...((conf.copy as string[]) || [])].filter(
+          Boolean,
+        ) as string[],
       );
       copyFiles.forEach((file) => {
         const p = resolve(cwd, file);
@@ -190,6 +192,11 @@ export async function bike(config: Partial<Conf>) {
     };
     if (conf.source) {
       conf.source.split(",").forEach((src) => {
+        watch(src, onWatch);
+      });
+    }
+    if (Array.isArray(conf.watch)) {
+      conf.watch.forEach((src) => {
         watch(src, onWatch);
       });
     }
