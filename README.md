@@ -232,9 +232,8 @@ Options:
   -f, --focus         Use RegExp focus some test                        [string]
       --start         Start server after on build     [boolean] [default: false]
       --platform      Esbuild platform                [string] [default: "node"]
-  -w, --watch         Watch source dir and other dir on change reload, example:
-                      watch source: '-w', watch other some dir: '-w=server
-                      -w=pkg'                           [array] [default: false]
+  -w, --watch         Watch some dir on change reload, example: '-w=server
+                      -w=pkg'                              [array] [default: []]
       --clear         On reload auto clear             [boolean] [default: true]
       --gzip          (only-browser) gzip watch is false, else is true [boolean]
       --host          (only-browser) browser serve host
