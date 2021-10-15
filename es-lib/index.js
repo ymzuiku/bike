@@ -168,8 +168,8 @@ function getConfig(argv) {
   }).option("watch", {
     alias: "w",
     type: "array",
-    default: false,
-    description: "Watch source dir and other dir on change reload, example: watch source: '-w', watch other some dir: '-w=server -w=pkg'"
+    default: [],
+    description: "Watch some dir on change reload, example: '-w=server -w=pkg'"
   }).option("clear", {
     type: "boolean",
     default: true,
@@ -715,13 +715,23 @@ var import_fs_extra7 = __toModule(require("fs-extra"));
 var import_fs_extra5 = __toModule(require("fs-extra"));
 var import_path7 = __toModule(require("path"));
 var baseConfig = (conf) => {
+  const argvs = new Set(conf.argv);
+  if (argvs.has("-w") || argvs.has("--watch")) {
+    console.error("Error: [--watch, -w] need input the dir path, example:");
+    console.error("-w=src or --watch=src");
+    process.exit();
+  }
+  conf.isWatch = false;
+  if (Array.isArray(conf.watch) && conf.watch.length > 0) {
+    conf.isWatch = true;
+  }
   if ((!conf._ || !conf._[0]) && !conf.html) {
     console.log("Need input source dir, like: bike src");
     process.exit();
   }
   conf.source = conf._[0];
   if (conf.gzip === void 0) {
-    if (conf.watch || conf.start) {
+    if (conf.isWatch || conf.start) {
       conf.gzip = false;
     } else {
       conf.gzip = true;
@@ -745,7 +755,7 @@ var baseConfig = (conf) => {
     conf.entry = conf.source + "/index.ts";
   }
   if (conf.sourcemap === void 0) {
-    if (conf.watch || conf.start || conf.reporter) {
+    if (conf.isWatch || conf.start || conf.reporter) {
       conf.sourcemap = true;
     }
   }
@@ -831,7 +841,7 @@ function bike(config) {
       }
       const htmlPath = (0, import_path8.resolve)(cwd6, conf["html-out"], "index.html");
       import_fs_extra7.default.writeFileSync(htmlPath, conf["html-text"]);
-      if (conf.watch) {
+      if (conf.isWatch) {
         devServe(conf);
       }
     }
@@ -871,12 +881,12 @@ function bike(config) {
           entryPoints: [(0, import_path8.resolve)(cwd6, conf["entry"])],
           bundle: true,
           target: ["es6"],
-          minify: !conf.watch,
+          minify: !conf.isWatch,
           platform: "neutral",
           splitting: conf.splitting,
           format: conf.format || "cjs",
           outdir: conf["out"],
-          sourcemap: !conf.watch
+          sourcemap: !conf.isWatch
         };
       } else {
         esbuildOptions = {
@@ -900,12 +910,12 @@ function bike(config) {
         entryPoints: [(0, import_path8.resolve)(cwd6, conf["html-entry"])],
         bundle: true,
         target: ["es6"],
-        minify: !conf.watch,
+        minify: !conf.isWatch,
         platform: "neutral",
         splitting: true,
         format: conf.format || "esm",
         outdir: conf["html-out"],
-        sourcemap: !conf.watch
+        sourcemap: !conf.isWatch
       };
     }
     const build = () => __async(this, null, function* () {
@@ -921,13 +931,13 @@ function bike(config) {
       if (conf.after) {
         conf.after(conf);
       }
-      if (!conf.watch && !conf.start) {
+      if (!conf.isWatch && !conf.start) {
         console.log("release server done.");
       }
     });
     const buildHTML = () => __async(this, null, function* () {
       yield import_esbuild.default.build(esbuildHTMLOptions);
-      if (!conf.watch && !conf.start) {
+      if (!conf.isWatch && !conf.start) {
         releaseBrowser(conf);
         console.log("release html done.");
       }
@@ -958,7 +968,7 @@ function bike(config) {
     if (conf.start) {
       reload();
       reloadHTML();
-    } else if (conf.watch) {
+    } else if (conf.isWatch) {
       reload();
       reloadHTML();
       const onWatch = () => __async(this, null, function* () {

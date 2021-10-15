@@ -4,13 +4,28 @@ import { resolve } from "path";
 import type { Conf } from "./getConfig";
 
 export const baseConfig = (conf: Partial<Conf>): Conf => {
+  const argvs = new Set(conf.argv!);
+  if (argvs.has("-w") || argvs.has("--watch")) {
+    console.error(
+      "Error: [--watch, -w] need input the dir path, example:",
+    );
+    console.error(
+      "-w=src or --watch=src",
+    );
+    process.exit();
+  }
+
+  conf.isWatch = false;
+  if (Array.isArray(conf.watch) && conf.watch.length > 0) {
+    conf.isWatch = true;
+  }
   if ((!conf._ || !conf._[0]) && !conf.html) {
     console.log("Need input source dir, like: bike src");
     process.exit();
   }
   conf.source = conf._![0] as any;
   if (conf.gzip === undefined) {
-    if (conf.watch || conf.start) {
+    if (conf.isWatch || conf.start) {
       conf.gzip = false;
     } else {
       conf.gzip = true;
@@ -39,7 +54,7 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
   }
 
   if (conf.sourcemap === undefined) {
-    if (conf.watch || conf.start || conf.reporter) {
+    if (conf.isWatch || conf.start || conf.reporter) {
       conf.sourcemap = true;
     }
   }
@@ -68,8 +83,8 @@ export const baseConfig = (conf: Partial<Conf>): Conf => {
         const entryPath = resolve(htmlPath, url);
         const list = entryPath.split("/").filter(Boolean);
         conf["html-source"] = list[list.length - 2];
-        conf["html-entry"] =
-          list[list.length - 2] + "/" + list[list.length - 1];
+        conf["html-entry"] = list[list.length - 2] + "/" +
+          list[list.length - 1];
       }
     }
     conf["html-text"] = html.replace(/src="(.*?)"/, 'src="/index.js?bike=1"');

@@ -54,7 +54,7 @@ test.it("index test", (so) => {
 Run Dev Server:
 
 ```bash
-bike src --watch
+bike src --watch=src
 ```
 
 Build release
@@ -66,7 +66,7 @@ bike src
 Run test
 
 ```bash
-bike src --watch --test
+bike src --watch=src --test
 ```
 
 View test cover, need install c8

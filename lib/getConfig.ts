@@ -129,9 +129,9 @@ export function getConfig(argv: string[]) {
     .option("watch", {
       alias: "w",
       type: "array",
-      default: false,
+      default: [],
       description:
-        "Watch source dir and other dir on change reload, example: watch source: '-w', watch other some dir: '-w=server -w=pkg'",
+        "Watch some dir on change reload, example: '-w=server -w=pkg'",
     })
     .option("clear", {
       type: "boolean",
@@ -217,6 +217,7 @@ const _conf = getConfig([]);
 
 export type Conf = typeof _conf & {
   source: string;
+  isWatch: boolean;
   afterFork: Function;
   after: Function;
   before: Function;

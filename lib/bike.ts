@@ -32,7 +32,7 @@ export async function bike(config: Partial<Conf>) {
     }
     const htmlPath = resolve(cwd, conf["html-out"]!, "index.html");
     fs.writeFileSync(htmlPath, conf["html-text"]);
-    if (conf.watch) {
+    if (conf.isWatch) {
       devServe(conf);
     }
   }
@@ -82,12 +82,12 @@ export async function bike(config: Partial<Conf>) {
         bundle: true,
         target: ["es6"],
         // target: ["chrome58", "firefox57", "safari11", "edge16"],
-        minify: !conf.watch,
+        minify: !conf.isWatch,
         platform: "neutral",
         splitting: conf.splitting,
         format: conf.format || "cjs",
         outdir: conf["out"],
-        sourcemap: !conf.watch,
+        sourcemap: !conf.isWatch,
       };
     } else {
       esbuildOptions = {
@@ -113,17 +113,17 @@ export async function bike(config: Partial<Conf>) {
       bundle: true,
       target: ["es6"],
       // target: ["chrome58", "firefox57", "safari11", "edge16"],
-      minify: !conf.watch,
+      minify: !conf.isWatch,
       platform: "neutral",
       splitting: true,
       format: conf.format || "esm",
       outdir: conf["html-out"],
-      sourcemap: !conf.watch,
+      sourcemap: !conf.isWatch,
     };
   }
 
   const build = async () => {
-    // if ((conf.watch || conf.start) && conf.clear) {
+    // if ((conf.isWatch || conf.start) && conf.clear) {
     //   console.clear();
     // }
     if (conf.test) {
@@ -140,7 +140,7 @@ export async function bike(config: Partial<Conf>) {
       conf.after(conf);
     }
 
-    if (!conf.watch && !conf.start) {
+    if (!conf.isWatch && !conf.start) {
       console.log("release server done.");
     }
   };
@@ -148,7 +148,7 @@ export async function bike(config: Partial<Conf>) {
   const buildHTML = async () => {
     await esbuild.build(esbuildHTMLOptions);
 
-    if (!conf.watch && !conf.start) {
+    if (!conf.isWatch && !conf.start) {
       releaseBrowser(conf);
       console.log("release html done.");
     }
@@ -183,7 +183,7 @@ export async function bike(config: Partial<Conf>) {
   if (conf.start) {
     reload();
     reloadHTML();
-  } else if (conf.watch) {
+  } else if (conf.isWatch) {
     reload();
     reloadHTML();
     const onWatch = async () => {
