@@ -11,11 +11,11 @@ Easy build nodejs code to safe deploy to other service.
 
 - `--watch`
 - `--dev`
-- `--browser`
 - `--build`
 - `--crypto`
 - `--byte`
 - `--crypto-byte`
+- `--browser`
 
 ## Watch
 
@@ -43,14 +43,6 @@ Build code to nodejs, hot reload in your coding code.
 bike src/index.ts dist/index.js --dev
 ```
 
-## Browser
-
-Build code to browser, need out a dir
-
-```sh
-bike src/index.ts dist --browser
-```
-
 
 ## Build to crypto
 
@@ -75,4 +67,12 @@ Build code to nodejs, crypto and build v8 bytecode.
 
 ```sh
 bike src/index.ts dist/index.js --crypto-byte
+```
+
+## Browser
+
+Build code to browser, need out a dir
+
+```sh
+bike src/index.ts dist --browser
 ```
