@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "private": false,
   "scripts": {
-    "build": "bike src/index.ts dist/index.js --crypto-byte"
+    "example": "bike example/index.ts dist/index.js --crypto-byte"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
