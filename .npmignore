@@ -1,5 +1,2 @@
-example
 dist
-npm-lock.yaml
-Makefile
-pnpm-lock.yaml
+src

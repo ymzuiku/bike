@@ -1,11 +1,17 @@
-/target
 .idea
 .vscode
 dist
 build
+coverage
+.env
+.eslintcache
+tmp
+vendor
 
 node_modules
 **/node_modules
+target
+**/target
 
 # misc
 .DS_Store
@@ -17,4 +23,3 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-Makefile
