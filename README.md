@@ -68,7 +68,7 @@ bike src/index.ts dist/index.js --crypto-byte
 
 ## Browser
 
-Build code to browser, need out a dir
+Build code to browser, need out a dir, builwatch and build split code.
 
 ```sh
 bike src/index.ts dist --browser
