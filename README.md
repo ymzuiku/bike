@@ -34,12 +34,11 @@ bike src/index.ts dist/index.js --build
 
 Build code to nodejs, hot reload in your coding code.
 
-`--dev` =  `--watch` + `--build`
+`--dev` = `--watch` + `--build`
 
 ```sh
 bike src/index.ts dist/index.js --dev
 ```
-
 
 ## Build to crypto
 
@@ -54,15 +53,18 @@ bike src/index.ts dist/index.js --crypto
 Build code to v8 bytecode.
 
 ```sh
+# project need install bytenode
+npm install --save-dev bytenode
 bike src/index.ts dist/index.js --byte
 ```
-
 
 ## Build to crypto + bytecode
 
 Build code to nodejs, crypto and build v8 bytecode.
 
 ```sh
+# project need install bytenode
+npm install --save-dev bytenode
 bike src/index.ts dist/index.js --crypto-byte
 ```
 

@@ -7,6 +7,7 @@ const fs = require("fs");
 const { resolve } = require("path");
 const esbuild = require("esbuild");
 const pkg = require("./package.json");
+const { exit } = require("process");
 
 const cwd = (...args) => resolve(process.cwd(), ...args);
 const entryfile = argv[0];
@@ -19,8 +20,18 @@ const isCrypto = argv[2] === "--crypto";
 const isBytecode = argv[2] === "--byte";
 const isCryptoBytecode = argv[2] === "--crypto-byte";
 
+let config = {};
+if (fs.existsSync(cwd("bike.config.js"))) {
+  config = require(cwd("bike.config.js"));
+}
+
 const depend = Object.keys({ ...pkg.devDependencies, ...pkg.dependencies });
 let worker;
+
+if (!fs.existsSync(entryfile)) {
+  console.error("Not found file:", entryfile);
+  exit(1);
+}
 
 function serve() {
   if (worker) {
@@ -43,16 +54,23 @@ const builder = (enter, external, allowOverwrite) => {
     format: isBrowser ? "esm" : "cjs",
     platform: isBrowser ? "browser" : "node",
     splitting: isBrowser,
+    ignoreAnnotations: !(isDev || isWatch || isBrowser),
+    treeShaking: true,
+    define: {
+      "import.meta.vitest": "false",
+      "import_meta.vitest": "false",
+    },
     sourcemap: isDev || isWatch || isBrowser,
     inject: isDev || isWatch ? [resolve(__dirname, "./inject.js")] : [],
     allowOverwrite: allowOverwrite,
     external: external || [],
+    ...config,
     watch:
       isDev || isWatch || isBrowser
         ? {
             onRebuild(error, result) {
               if (error) {
-                console.log("__debug__", error);
+                console.log("rebuild error: ", error);
               } else if (isDev) {
                 serve();
               }
