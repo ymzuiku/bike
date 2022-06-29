@@ -19,6 +19,8 @@ const isBuild = argv[2] === "--build";
 const isCrypto = argv[2] === "--crypto";
 const isBytecode = argv[2] === "--byte";
 const isCryptoBytecode = argv[2] === "--crypto-byte";
+const killPort = argv[3];
+const { kill } = require("cross-port-killer");
 
 let config = {};
 if (fs.existsSync(cwd("bike.config.js"))) {
@@ -33,10 +35,17 @@ if (!fs.existsSync(entryfile)) {
   exit(1);
 }
 
-function serve() {
+async function serve() {
+  if (killPort) {
+    await kill(killPort);
+    console.log(`[bike] kill port: ${killPort}`);
+  }
+
   if (worker) {
-    worker.kill(1);
-    worker = null;
+    try {
+      worker.kill(1);
+      worker = null;
+    } catch (err) {}
   }
   worker = child_process.spawn("node", [cwd(outfile)], {
     stdio: "inherit",
