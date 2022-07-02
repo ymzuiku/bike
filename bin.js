@@ -27,7 +27,7 @@ if (fs.existsSync(cwd("bike.config.js"))) {
   config = require(cwd("bike.config.js"));
 }
 
-const depend = Object.keys({ ...pkg.devDependencies, ...pkg.dependencies });
+const depend = Object.keys({ "pg-native": "1", ...pkg.devDependencies, ...pkg.dependencies });
 let worker;
 
 if (!fs.existsSync(entryfile)) {
