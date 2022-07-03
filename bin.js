@@ -1,17 +1,35 @@
 #!/usr/bin/env node
 require("source-map-support").install();
 
+const { resolve } = require("path");
+const cwd = (...args) => resolve(process.cwd(), ...args);
 const argv = process.argv.splice(2);
 const child_process = require("child_process");
 const fs = require("fs");
-const { resolve } = require("path");
 const esbuild = require("esbuild");
 const pkg = require("./package.json");
+const pkg2 = require(cwd("./package.json"));
 const { exit } = require("process");
 
-const cwd = (...args) => resolve(process.cwd(), ...args);
-const entryfile = argv[0];
-const outfile = argv[1];
+let entryfile = argv[0];
+let outfile = argv[1];
+let copyFileIn = "";
+let copyFileOut = "";
+const split = "@";
+
+if (entryfile.indexOf(split) > -1) {
+  const [a, b] = entryfile.split(split);
+  entryfile = a;
+  copyFileIn = b;
+  if (outfile.indexOf(split) > -1) {
+    const [a, b] = outfile.split(split);
+    outfile = a;
+    copyFileOut = b;
+  }
+  if (!copyFileIn || !copyFileOut) {
+    throw Error("[bike] enrtyfile or outfile is error");
+  }
+}
 const isDev = argv[2] === "--dev";
 const isWatch = argv[2] === "--watch";
 const isBrowser = argv[2] === "--browser";
@@ -21,13 +39,38 @@ const isBytecode = argv[2] === "--byte";
 const isCryptoBytecode = argv[2] === "--crypto-byte";
 const killPort = argv[3];
 const { kill } = require("cross-port-killer");
+const runner = argv[4] || "node";
+const otherArgs = (argv.join(" ").split("--")[1] || "").split(" ");
 
 let config = {};
 if (fs.existsSync(cwd("bike.config.js"))) {
   config = require(cwd("bike.config.js"));
 }
 
-const depend = Object.keys({ "pg-native": "1", ...pkg.devDependencies, ...pkg.dependencies });
+const pkgs = {
+  // "pg-native": "1",
+  // "source-map-support": 1,
+  // path: "1",
+  // fs: "1",
+  // tinypool: "1",
+  // piscina: "1",
+  ...pkg.devDependencies,
+  ...pkg.dependencies,
+  ...pkg2.devDependencies,
+  ...pkg2.dependencies,
+};
+
+const keep = {
+  nanoid: 1,
+};
+
+const depend = Object.keys(pkgs).filter((k) => {
+  if (keep[k]) {
+    return false;
+  }
+  return !/workspace/.test(pkgs[k]);
+});
+
 let worker;
 
 if (!fs.existsSync(entryfile)) {
@@ -47,7 +90,7 @@ async function serve() {
       worker = null;
     } catch (err) {}
   }
-  worker = child_process.spawn("node", [cwd(outfile)], {
+  worker = child_process.spawn(runner, [cwd(copyFileOut || outfile), ...otherArgs], {
     stdio: "inherit",
   });
 }
@@ -61,6 +104,7 @@ const builder = (enter, external, allowOverwrite) => {
     minify: !(isDev || isWatch || isBrowser),
     target: ["node16"],
     format: isBrowser ? "esm" : "cjs",
+    // format: "esm",
     platform: isBrowser ? "browser" : "node",
     splitting: isBrowser,
     ignoreAnnotations: !(isDev || isWatch || isBrowser),
@@ -81,6 +125,7 @@ const builder = (enter, external, allowOverwrite) => {
               if (error) {
                 console.log("rebuild error: ", error);
               } else if (isDev) {
+                copyTheOutFile();
                 serve();
               }
             },
@@ -157,6 +202,13 @@ const buildCrypto = async () => {
   fs.writeFileSync(cwd(outfile), obf);
 };
 
+const copyTheOutFile = async () => {
+  if (copyFileIn && copyFileOut) {
+    const code = fs.readFileSync(cwd(copyFileIn)).toString();
+    fs.writeFileSync(cwd(copyFileOut), code);
+  }
+};
+
 builder(cwd(entryfile), depend).then(async (result) => {
   if (isDev) {
     serve();
@@ -177,4 +229,5 @@ builder(cwd(entryfile), depend).then(async (result) => {
     await buildCrypto();
     await buildByte();
   }
+  copyTheOutFile();
 });

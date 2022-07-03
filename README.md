@@ -83,3 +83,11 @@ Run dev and kill 5000 port last time.
 ```sh
 bike src/index.ts dist/index.js --dev 5000
 ```
+
+## Use args
+
+Other args after `--`:
+
+```sh
+bike src/index.ts dist/index.js --dev 5000 node -- --experimental-fetch
+```
