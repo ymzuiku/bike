@@ -1,8 +1,8 @@
-<img src="bike.svg" alt="bike">
-
 # bike
 
 Easy build nodejs code to safe deploy to other service.
+
+<img src="bike.svg" alt="bike">
 
 ## argv
 
@@ -14,12 +14,14 @@ Easy build nodejs code to safe deploy to other service.
 - `--crypto-byte`
 - `--browser`
 
-## Watch
+## Develop
 
-Build code to nodejs in one file.
+Build code to nodejs, hot reload in your coding code.
+
+`--dev` = `--watch` + `--build`
 
 ```sh
-bike src/index.ts dist/index.js --watch
+bike src/index.ts dist/index.js --dev
 ```
 
 ## Build
@@ -30,14 +32,12 @@ Build code to nodejs in one file.
 bike src/index.ts dist/index.js --build
 ```
 
-## Develop
+## Only watch
 
-Build code to nodejs, hot reload in your coding code.
-
-`--dev` = `--watch` + `--build`
+Build code to nodejs in one file.
 
 ```sh
-bike src/index.ts dist/index.js --dev
+bike src/index.ts dist/index.js --watch
 ```
 
 ## Build to crypto

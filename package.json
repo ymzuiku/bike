@@ -1,6 +1,6 @@
 {
   "name": "bike",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": false,
   "scripts": {
     "example": "bike example/index.ts dist/index.js --crypto-byte"
