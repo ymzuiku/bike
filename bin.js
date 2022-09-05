@@ -116,7 +116,7 @@ const builder = (enter, external, allowOverwrite) => {
     sourcemap: isDev || isWatch || isBrowser,
     inject: isDev || isWatch ? [resolve(__dirname, "./inject.js")] : [],
     allowOverwrite: allowOverwrite,
-    external: external || [],
+    external: [...external, "pg-native"] || [],
     ...config,
     watch:
       isDev || isWatch || isBrowser
